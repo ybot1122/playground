@@ -1,3 +1,5 @@
+import RiveCar from "@/components/RiveCar/RiveCar";
+
 export default function Home() {
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] snap-y snap-mandatory">
@@ -13,7 +15,7 @@ export default function Home() {
           <p className="h-[50vh] snap-start bg-yellow snap-always">more...</p>
           <p className="h-[50vh] snap-start bg-green snap-always">over and over</p>
           <p className="h-[50vh] snap-start bg-yellow snap-always">more more...</p>
-          <p className="h-[50vh] snap-start bg-green snap-always">over and over</p>
+          <div className="h-[50vh] snap-start bg-green snap-always w-full">Car<RiveCar /></div>
           <p className="h-[50vh] snap-start bg-yellow snap-always">end</p>
         </main>
     </div>
