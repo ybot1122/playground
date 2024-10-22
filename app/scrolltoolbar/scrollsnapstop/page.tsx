@@ -1,3 +1,5 @@
+"use client"
+import FullScreenSection from "@/components/FullScreenSection/FullScreenSection";
 import RiveCar from "@/components/RiveCar/RiveCar";
 
 export default function Home() {
@@ -9,14 +11,15 @@ export default function Home() {
             <h1 className="text-xl">Scroll Snap Scrolling</h1>
             <h2>scroll-snap-type: y mandatory; scroll-snap-stop: always;</h2>
         </div>
-          <p className="h-[100vh] snap-start bg-green snap-always">Start scrolling...</p>
-          <p className="h-[100vh] snap-start bg-yellow snap-always">Just taking up space</p>
-          <p className="h-[100vh] snap-start bg-green snap-always">So you can keep</p>
-          <p className="h-[100vh] snap-start bg-yellow snap-always">scrolling</p>
-          <p className="h-[100vh] snap-start bg-green snap-always">over and over</p>
-          <p className="h-[100vh] snap-start bg-yellow snap-always">more...</p>
-          <p className="h-[100vh] snap-start bg-green snap-always">over and over</p>
-          <p className="h-[100vh] snap-start bg-yellow snap-always">more more...</p>
+        <FullScreenSection label="Start scrolling..." />
+        <FullScreenSection label="Start scrolling..." />
+        <FullScreenSection label="Start scrolling..." />
+        <FullScreenSection label="Start scrolling..." />
+        <FullScreenSection label="Start scrolling..." />
+        <FullScreenSection label="Start scrolling..." />
+        <FullScreenSection label="Start scrolling..." />
+        <FullScreenSection label="Start scrolling..." />
+        <FullScreenSection label="Start scrolling..." />
           <div className="h-[100vh] snap-start bg-green snap-always w-full">Car<RiveCar /></div>
           <p className="h-[100vh] snap-start bg-yellow snap-always">end</p>
         </main>
