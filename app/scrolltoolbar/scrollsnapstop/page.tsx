@@ -2,7 +2,7 @@ import RiveCar from "@/components/RiveCar/RiveCar";
 
 export default function Home() {
   return (
-    <div className="w-[100vh] snap-y snap-mandatory">
+    <div className="w-[100vw] snap-y snap-mandatory">
       <div className="fixed top-0 left-0 w-full bg-yellow">I am fixed</div>
       <main className="flex flex-col items-center sm:items-start snap-y snap-mandatory *:p-10">
         <div className="h-[100vh] snap-start bg-yellow">
