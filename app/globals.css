@@ -24,3 +24,7 @@ body {
 html {
   scroll-snap-type: y mandatory;
 }
+
+html, body {
+  overscroll-behavior: none;
+}
