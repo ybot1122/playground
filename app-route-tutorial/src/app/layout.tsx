@@ -20,9 +20,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${font.className} bg-slate-700 text-teal-100`}>
-        <nav className="flex fixed top-0 left-0 w-[100vw] *:">
-          <ul>
-            <Link href="/">Home</Link>
+        <nav className="flex fixed top-0 left-0 w-[100vw] p-10 ">
+          <ul className="*:p-5 *:border-2 *:border-blue-500 *:mx-5">
+            <Link href="/" className="hover:underline">
+              Home
+            </Link>
+            <Link href="/about" className="hover:underline">
+              About
+            </Link>
+            <Link href="/services" className="hover:underline">
+              Services
+            </Link>
+            <Link href="/contact" className="hover:underline">
+              Contact
+            </Link>
           </ul>
         </nav>
         {children}
