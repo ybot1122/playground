@@ -7,7 +7,7 @@ export default function Home() {
         <p>Hello!</p>
         <p>Welcome to my NextJS App Router</p>
         <p>Tutorial</p>
-        </Container>
+      </Container>
     </main>
   );
 }
