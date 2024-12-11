@@ -1,43 +1,20 @@
 {
-  "name": "nextjs",
+  "name": "playground",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "prepare": "husky install",
-    "format": "prettier --write .",
-    "typecheck": "tsc --noEmit"
+    "format": "prettier --write ."
   },
   "dependencies": {
-    "@rive-app/react-canvas": "^4.14.5",
-    "next": "15.0.0",
-    "react": "19.0.0-rc-65a56d0e-20241020",
-    "react-dom": "19.0.0-rc-65a56d0e-20241020",
-    "react-intersection-observer": "^9.13.1"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "15.0.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.1",
     "husky": "^8.0.0",
     "lint-staged": "^15.2.10",
-    "postcss": "^8",
-    "prettier": "^3.3.3",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "prettier": "^3.3.3"
   },
   "lint-staged": {
     "*/.{js,jsx,ts,tsx,json}": [
-      "prettier --write",
-      "npm run lint",
-      "npm run typecheck"
+      "prettier --write"
     ]
   }
 }
