@@ -1,4 +1,3 @@
-import ContactForm from "@/components/ContactForm";
 import Container from "@/components/Container";
 
 export default function Contact() {
@@ -6,7 +5,8 @@ export default function Contact() {
     <main className="">
       <Container>
         <p>Want to Contact Us?</p>
-        <ContactForm />
+        <p>Call us at 123-456-7890</p>
+        <p>Or email at email@email.com</p>
       </Container>
     </main>
   );

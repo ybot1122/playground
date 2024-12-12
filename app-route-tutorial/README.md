@@ -14,7 +14,9 @@ This project and README.md will guide you through some basics of the Next.JS App
 
 One important thing to understand is that when you use Next.JS App Router, then by default you are automatically using React Server Components. Additionally, by default you are taking advantage of NextJS Streaming components. These concepts will be expanded upon later.
 
-For now, let's run the app and start with the basics.
+Also: This tutorial is for learning the Next.JS App Router. If you need to learn about Next.JS Pages Router, or want to compare between using Next.JS App Router vs Page Router, that will **not** be covered here. A good comparison between the two can be found [here](https://medium.com/@jawaragordon/choose-your-own-adventure-next-js-app-vs-pages-router-528dbf25b37f).
+
+Let's run the app and start with the basics.
 
 # Home Page 
 
@@ -50,13 +52,18 @@ Go back to our About page. As you can see it is a blog style page, with articles
 
 In our code, you can see this is done with dynamic routes. You create a folder with square brackets like `[articleId]` and then in the `page.tsx` file you can access the string in that field via the `params` props that NextJS provides automatically.
 
-As usual, you can nest these. Try commenting, bookmarking, or liking the article. Notice the URL, and notice the folder structure.
+As usual, you can nest these. Try commenting, bookmarking, or liking the article. Notice the URL, and notice that our file structure has multiple `[paramName]` folders to accomplish this.
 
-There are even more special syntax you can do with dynamic routes. For example a folder with square brackets and prefixed with `...` will catch all route segments like this: `[ ... slug]`. Go to the About page click "go down the rabbithole" to see how this works.
+You can also create catch all routes with a folder like this: `[...slug]`. Go to the About page click "go down the rabbithole" to see how this works.
 
+And finally you can make a dynamic route optional with double square brackets like this: `[[optionalSegment]]`. So if your directory structure is like this: `app/shop/[[optional]]/page.tsx` then `localhost:3000/shop` and `localhost:3000/shop/item1` will render the `page.tsx`.
 
-And you can make a dynamic route optional using double square brackets like this: `[[optionalSegment]]`. So if your directory structure is like this: `app/shop/[[optional]]/page.tsx` then `localhost:3000/shop` and `localhost:3000/shop/item1` will render the `page.tsx`.
+# That is the App Router Basics
 
-# Contact Page
+This was a crash course on the absolute basics of NextJS App Router. In the next lesson, we will go over the more advanced features: Parallel Routes and Intercepting routes. Additionally, we will start talking about the `loading.tsx` file that you can take advantage of.
 
-Look at the code for the contact page. Notice there is a child component `ContactForm` being imported. Look at that component, and notice the `use client` directive at the top of the file. This is an important concept we must understand when using App Router (and therefore using React Server Components).
+# Understanding React Server Components
+
+Earlier in this tutorial, I mentioned that every `page.tsx` we wrote here is indeed a `React Server Component`. This is an important difference when using App Router versus Page Router. In the next tutorial, you will see that we now have to be very explicit that a component is a Client Component by writing `"use client"` at the top of the component file.
+
+Understanding this directive is crucial to maximizing the value from App Router. Otherwise you can very easily miss out on optimizations that RSC and App Router are supposed to give you.
