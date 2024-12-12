@@ -50,7 +50,12 @@ Go back to our About page. As you can see it is a blog style page, with articles
 
 In our code, you can see this is done with dynamic routes. You create a folder with square brackets like `[articleId]` and then in the `page.tsx` file you can access the string in that field via the `params` props that NextJS provides automatically.
 
-As usual, you can nest these even more.
+As usual, you can nest these. Try commenting, bookmarking, or liking the article. Notice the URL, and notice the folder structure.
+
+There are even more special syntax you can do with dynamic routes. For example a folder with square brackets and prefixed with `...` will catch all route segments like this: `[ ... slug]`. Go to the About page click "go down the rabbithole" to see how this works.
+
+
+And you can make a dynamic route optional using double square brackets like this: `[[optionalSegment]]`. So if your directory structure is like this: `app/shop/[[optional]]/page.tsx` then `localhost:3000/shop` and `localhost:3000/shop/item1` will render the `page.tsx`.
 
 # Contact Page
 
