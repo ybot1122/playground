@@ -44,6 +44,10 @@ Did you click on the "Investment Services" link? That leads to a not found page.
 
 Looks like this website is not ready for production...
 
+# Dynamic Routes
+
+Go back to our About page. As you can see it is a blog style page, with articles and article IDs.
+
 # Contact Page
 
 Look at the code for the contact page. Notice there is a child component `ContactForm` being imported. Look at that component, and notice the `use client` directive at the top of the file. This is an important concept we must understand when using App Router (and therefore using React Server Components).
