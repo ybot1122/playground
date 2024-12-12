@@ -46,7 +46,11 @@ Looks like this website is not ready for production...
 
 # Dynamic Routes
 
-Go back to our About page. As you can see it is a blog style page, with articles and article IDs.
+Go back to our About page. As you can see it is a blog style page, with articles and article IDs. Click each of those articles and notice that the route name is printed on the screen.
+
+In our code, you can see this is done with dynamic routes. You create a folder with square brackets like `[articleId]` and then in the `page.tsx` file you can access the string in that field via the `params` props that NextJS provides automatically.
+
+As usual, you can nest these even more.
 
 # Contact Page
 
