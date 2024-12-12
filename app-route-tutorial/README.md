@@ -24,3 +24,10 @@ You can see these routes defined by their folder names in `src/app/about`, `src/
 
 > By default, `page.tsx` is rendered on the server. The component you export in `page.tsx` is indeed a React Server Component!
 
+### More Services
+
+Navigate to the Services page. In that page, click around to some of the other services that are offered by this company.
+
+Notice that these pages are nested under the `/services/` directory. So now you see nested routes in action.
+
+Also notice there is a `layout.tsx` that all the pages in `/services/***` will render. As you can see, we can also use nested `layout.tsx`!
