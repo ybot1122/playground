@@ -19,7 +19,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${font.className} bg-slate-700 text-teal-100`}>
+      <body
+        className={`${font.className} bg-slate-700 text-teal-100 pt-[200px]`}
+      >
         <nav className="flex fixed top-0 left-0 w-[100vw] p-10 ">
           <ul className="*:p-5 *:border-2 *:border-blue-500 *:mx-5">
             <Link href="/" className="hover:underline">
