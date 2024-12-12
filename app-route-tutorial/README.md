@@ -21,3 +21,6 @@ Notice there is `layout.tsx` next to the `page.tsx`. In Next.JS App Router, this
 As you click around the navigation bar, you will notice we also have the routes `/about`, `/contact`, and `/services`. 
 
 You can see these routes defined by their folder names in `src/app/about`, `src/app/contact` and `src/app/services`. Notice that each of these folders has a `page.tsx` file. This is required.
+
+> By default, `page.tsx` is rendered on the server. The component you export in `page.tsx` is indeed a React Server Component!
+
