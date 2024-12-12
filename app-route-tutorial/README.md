@@ -26,8 +26,8 @@ You can see these routes defined by their folder names in `src/app/about`, `src/
 
 ### More Services
 
-Navigate to the Services page. In that page, click around to some of the other services that are offered by this company.
+Navigate to the Services page. In that page, click around to some of the other services that are offered by this company. Notice that these pages are nested under the `/services/` directory. So now you see nested routes in action. Also notice there is a `layout.tsx` that all the pages in `/services/***` will render. As you can see, we can also use nested `layout.tsx`.
 
-Notice that these pages are nested under the `/services/` directory. So now you see nested routes in action.
+### Handling 404
 
-Also notice there is a `layout.tsx` that all the pages in `/services/***` will render. As you can see, we can also use nested `layout.tsx`!
+While on the services page, notice that the Investment Services button leads to a not found page. This is another unique file we can put in our folders. Next.JS will automatically use this if the user hits a route that is not defined. It can also be nested. Try going to localhost:3000/oogabooga and you will see the top-level `not-found.tsx` file instead.

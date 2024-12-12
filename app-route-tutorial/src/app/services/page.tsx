@@ -8,20 +8,20 @@ export default function Services() {
         <Card
           header="Logo Design"
           description="Give us your vision and idea, we make you a logo. Work with the best artists."
-          href="/logo_design"
+          href="/services/logo_design"
           hrefLabel="Learn More"
         />
         <Card
-          header="Logo Design"
-          description="Give us your vision and idea, we make you a logo. Work with the best artists."
-          href="/logo_design"
-          hrefLabel="Learn More"
+          header="Consultation"
+          description="We will meet with you and discuss ideas."
+          href="/services/consultation"
+          hrefLabel="Schedule Now"
         />
         <Card
-          header="Logo Design"
-          description="Give us your vision and idea, we make you a logo. Work with the best artists."
-          href="/logo_design"
-          hrefLabel="Learn More"
+          header="Investment Services"
+          description="Let us help you with your portfolio. We can manage assets and funds on your behalf."
+          href="/services/investment"
+          hrefLabel="Sign Up Today"
         />
       </div>
     </main>

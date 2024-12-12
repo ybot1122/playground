@@ -18,11 +18,11 @@ export default function Card({
   hrefLabel: string;
 }) {
   return (
-    <NextCard className="max-w-[400px]">
+    <NextCard className="max-w-[400px] p-5">
       <CardHeader className="flex gap-3">
-        <div className="flex justify-center items-center">
-          <p className="text-lg">{header}</p>
-        </div>
+        <h3 className="text-lg text-center text-teal-400 font-bold">
+          {header}
+        </h3>
       </CardHeader>
       <CardBody>
         <p className="text-sm">{description}</p>
