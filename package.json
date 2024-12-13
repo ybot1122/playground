@@ -6,6 +6,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@nextui-org/card": "^2.2.7"
   },
   "devDependencies": {
     "husky": "^8.0.0",
@@ -13,7 +14,7 @@
     "prettier": "^3.3.3"
   },
   "lint-staged": {
-    "*/.{js,jsx,ts,tsx,json}": [
+    "**/*.{js,jsx,ts,tsx,json}": [
       "prettier --write"
     ]
   }
