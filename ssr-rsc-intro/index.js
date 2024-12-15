@@ -43,8 +43,14 @@ require("@babel/register")({
 const myFirstApp = require("./my-first-react-app/App.jsx");
 
 app.get("/my-first-react-app", (req, res) => {
-  console.log(myFirstApp());
-  const html = renderToString(myFirstApp());
+  const root = myFirstApp();
+
+  console.log(root);
+  for (c in root.props.children) {
+    console.log(root.props.children[c]);
+  }
+
+  const html = renderToString(root);
 
   res.send(`<!DOCTYPE html>
     <html>
