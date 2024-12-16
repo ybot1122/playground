@@ -58,9 +58,7 @@ app.get("/my-first-react-app", (req, res) => {
             <title>Hello World</title>
         </head>
         <body>
-            <div id="app-root">
-              ${html}
-            </div>
+            <div id="app-root">${html}</div>
         </body>
     </html>`);
 });

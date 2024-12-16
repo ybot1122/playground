@@ -41,9 +41,7 @@ require("@babel/register")({
 });
 ```
 
-Again, you can look up the docs for `@babel/register`. Note that this is where fancy "meta-frameworks" will do different things to enhance developer experience and whatnot. Some may use tools other than Babel, and some may do offline / asynchronous transpilation instead of on-the-fly like I am doing here.
-
-Anyways... now, I can import my React component!
+Again, you can look up the docs for `@babel/register`. Now, I can import my React component!
 
 ```jsx
 const myFirstApp = require("./my-first-react-app/App.jsx");
@@ -62,7 +60,7 @@ Visit `localhost:3000/my-first-react-app` to see our beautiful React app. Take a
 
 Until you try clicking the increment button on the counter. Nothing happens. But if you look at the code, I'm clearly using `React.useState()` and `button onClick` to update the counter. What happened?
 
-Well, right now the client only has raw HTML. It does not have any javascript whatsoever, so it was not able to "hook up" my interactive component to those React features. What we need to do is send some Javascript to the client, and tell it to hook up my component to React. This is the "hydration" step you might have heard of. Indeed, this going to be more magic sauce from the `react-dom` package. We will do that in the next section.
+Well, right now the client only has raw HTML. It does not have any javascript whatsoever, so it is not able to "hook up" my interactive component to those React features. What we need to do is send some Javascript to the client, and tell it to hook up my component to React. This is the "hydration" step you might have heard of. Indeed, this going to be more magic sauce from the `react-dom` package. We will do that in the next section.
 
 **OK COOL, BUT WHAT ABOUT RSC AND STREAMING AND...** we are getting there. Understanding these first few sections will help us understand everything else. Let me direct your attention to the server logs. You will notice that I added some console logs:
 
@@ -100,7 +98,7 @@ JSON.stringify({ func: () => console.log("a") });
 // output: {}
 ```
 
-Since Functions are not serializable, we cannot send this representation from server to client. The data will be lost. That is why, when we "hydrate" on the client, we essentially render then entire React tree again, on the client.
+Since Functions are not serializable, we cannot send this representation from server to client. The data will be lost. That is why, when we "hydrate" on the client, we essentially render the entire React tree again, on the client.
 
 In later sections, we will see how RSC overcomes this by representing its components differently - in a format that is indeed **serializable**. This new representation is what then unlocks value from _streaming_ the data to the client.
 
@@ -132,7 +130,7 @@ Check it out at `localhost:3000/my-first-react-counter`.
 
 Let's pause and see what we have accomplished: We are rendering React on the serverside, delivering that rendered HTML to the clientside, and then hydrating our application on the clientside so it can be fully interactive. Well done.
 
-But wait a minute... Hydrating the React app on the clientside? Do you mean we are literally rebuilding the entire React tree on the clientside, **again** after we did that on the serverside? Indeed. Ideally, there is no actual diff in the HTML structure, so ideally `hydrateRoot` only attaches eventlisteners and Javascript functionality to existing HTML DOM elements. But if it does detect a mismatch in the HTML, it could lead to rendering new HTML on the client.
+But wait a minute... Hydrating the React app on the clientside? Do you mean we are literally rebuilding the entire React tree on the clientside, **again** after we did that on the serverside? Indeed. Ideally, there is no actual diff in the HTML structure, so ideally `hydrateRoot` only attaches eventlisteners and Javascript functionality to existing DOM elements. But if it does detect a mismatch in the HTML, it could lead to rendering new HTML on the client.
 
 Do you see the opportunity to optimize this hydration step?
 
