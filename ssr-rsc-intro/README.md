@@ -113,5 +113,33 @@ For now... onto the next section... Where were we? Oh yes, hydration. Let's make
 So we have HTML on the clientside, but the interactive Counter component is not working because there is no Javascript. What is our solution? We will use another API from `react-dom`:
 
 ```jsx
-ReactDOM.hydrate(<App />, document.getElementById("root"));
+ReactDOM.hydrateRoot(document.getElementById("app-root"), <App />);
 ```
+
+Take a look at the file `client.js`. There I have written a script: It imports react, react-dom, and the App, then it makes the call above. This script needs to run on the client, after the initial HTML is rendered.
+
+So to create this script, I have to use a bundler. In this case, I use webpack to bundle this `client.js` file and output a `bundle.js` file which contains all the source code of React, React DOM, my React Components, etc.
+
+Then in the HTML, I add a new line:
+
+```html
+<script src="/bundle.js"></script>
+```
+
+When the client renders the HTML, it will then run into this line and download and run my `bundle.js` script. That script will run `hydrateRoot()` and if all is correct, my interactive counter component should be working.
+
+Check it out at `localhost:3000/my-first-react-counter`.
+
+Let's pause and see what we have accomplished: We are rendering React on the serverside, delivering that rendered HTML to the clientside, and then hydrating our application on the clientside so it can be fully interactive. Well done.
+
+But wait a minute... Hydrating the React app on the clientside? Do you mean we are literally rebuilding the entire React tree on the clientside, **again** after we did that on the serverside? Indeed. Ideally, there is no actual diff in the HTML structure, so ideally `hydrateRoot` only attaches eventlisteners and Javascript functionality to existing HTML DOM elements. But if it does detect a mismatch in the HTML, it could lead to rendering new HTML on the client.
+
+Do you see the opportunity to optimize this hydration step?
+
+I will give a hint: which part of our React app is actually interactive?
+
+The opportunity to optimize is this: Why should we waste effort rerendering the entire React tree, when we know that the only component that needs to be hydrated is `<Counter />`?
+
+Think about it - everything else in my app is static HTML. You literally saw it working perfectly in the last section without _any javascript at all!_ All I really needed was to hydrate my `<Counter />` component. What if the hydration step automatically knew to skip all that static HTML stuff, and just hydrate the `<Counter />`?
+
+Indeed... React Server Components unlocks this! See you in Section 4...

@@ -76,10 +76,7 @@ app.use(middleware(compiler));
 
 app.get("/my-first-react-counter", (req, res) => {
   const root = myFirstApp();
-
   const html = renderToString(root);
-
-  console.log(html);
 
   res.send(`<!DOCTYPE html>
     <html>
