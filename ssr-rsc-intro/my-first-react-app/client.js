@@ -4,7 +4,9 @@
  */
 
 const React = require("react");
-const ReactDOM = require("react-dom");
+const ReactDOM = require("react-dom/client");
 const App = require("./App.jsx");
 
-ReactDOM.hydrate(<App />, document.getElementById("root"));
+console.log(document.getElementById("app-root"));
+
+ReactDOM.hydrateRoot(document.getElementById("app-root"), <App />);

@@ -65,6 +65,36 @@ app.get("/my-first-react-app", (req, res) => {
     </html>`);
 });
 
+/**
+ * SECTION 3: Serverside Rendering with Hydrate on Clientside
+ */
+const webpack = require("webpack");
+const middleware = require("webpack-dev-middleware");
+const webpackConfig = require("./webpack.config.js");
+const compiler = webpack(webpackConfig);
+app.use(middleware(compiler));
+
+app.get("/my-first-react-counter", (req, res) => {
+  const root = myFirstApp();
+
+  const html = renderToString(root);
+
+  console.log(html);
+
+  res.send(`<!DOCTYPE html>
+    <html>
+        <head>
+            <title>Hello World</title>
+        </head>
+        <body>
+            <div id="app-root">
+              ${html}
+            </div>
+            <script src="/bundle.js"></script>
+        </body>
+    </html>`);
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });

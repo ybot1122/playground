@@ -4,7 +4,6 @@
   "description": "Intro to ssr / rsc",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js"
   },
   "author": "",
@@ -13,8 +12,11 @@
     "@babel/core": "^7.6.4",
     "@babel/preset-react": "^7.26.3",
     "@babel/register": "^7.6.2",
+    "babel-loader": "^9.2.1",
     "express": "^4.21.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "webpack": "^5.97.1",
+    "webpack-dev-middleware": "^7.4.2"
   }
 }
