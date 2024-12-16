@@ -141,3 +141,9 @@ The opportunity to optimize is this: Why should we waste effort rerendering the 
 Think about it - everything else in my app is static HTML. You literally saw it working perfectly in the last section without _any javascript at all!_ All I really needed was to hydrate my `<Counter />` component. What if the hydration step automatically knew to skip all that static HTML stuff, and just hydrate the `<Counter />`?
 
 Indeed... React Server Components unlocks this! See you in Section 4...
+
+# Additional Resources
+- Implement ssr: https://www.youtube.com/watch?v=NwyQONeqRXA
+- RSC vs SSR: https://www.youtube.com/watch?v=jEJEFAc8tSI
+- RSC nitty-gritty: https://www.plasmic.app/blog/how-react-server-components-work#life-of-an-rsc-render
+- RSC from scratch: https://www.youtube.com/watch?v=MaebEqhZR84&pp=ygUocmVhY3Qgc2VydmVyIGNvbXBvbmVudHMgZnJvbSBzY3JhdGNoIGJlbg%3D%3D
