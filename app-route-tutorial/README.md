@@ -18,7 +18,7 @@ Also: This tutorial is for learning the Next.JS App Router. If you need to learn
 
 Let's run the app and start with the basics.
 
-## Home Page 
+## Home Page
 
 The Next.JS App Router is **filesystem based**. So instead of writing a config or mapping strings/regex to a Page Component, we use folders to create our routes.
 
@@ -38,7 +38,7 @@ By default, `page.tsx` is rendered on the server. The component you export in `p
 
 Navigate to the Services page. In that page, click around to some of the other services that are offered by this company. Notice that these pages are nested under the `/services/` directory. So now you see nested routes in action.
 
-Also notice there is a `layout.tsx` that all the pages in `/services/***` will render. As you can see, we can also use nested `layout.tsx`.
+Also notice there is a `layout.tsx` that all the pages in `/services/**` will render. As you can see, we can also use nested `layout.tsx`.
 
 ## Handling 404
 
@@ -66,4 +66,4 @@ This was a crash course on the absolute basics of NextJS App Router. In the next
 
 Earlier in this tutorial, I mentioned that every `page.tsx` we wrote here is indeed a `React Server Component`. This is an important difference when using App Router versus Page Router. In the next tutorial, you will see that we now have to be very explicit that a component is a Client Component by writing `"use client"` at the top of the component file.
 
-Understanding this directive is crucial to maximizing the value from App Router. Otherwise you can miss out on optimizations that RSC and App Router are supposed to give you.
+Understanding this directive is crucial to maximizing the value from App Router and RSC.
