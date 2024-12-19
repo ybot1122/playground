@@ -168,3 +168,5 @@ Thank you so much for joining me on this guided tutorial.
 - RSC from scratch: https://www.youtube.com/watch?v=MaebEqhZR84&pp=ygUocmVhY3Qgc2VydmVyIGNvbXBvbmVudHMgZnJvbSBzY3JhdGNoIGJlbg%3D%3D
 - New Suspense SSR Architecture in React 18: https://github.com/reactwg/react-18/discussions/37
 - RSC no framework: https://timtech.blog/posts/react-server-components-rsc-no-framework/
+- RSC overview https://www.joshwcomeau.com/react/server-components/
+- Kent-c-dodds RSC mvp: https://www.youtube.com/watch?v=4S5m5Jhneds
