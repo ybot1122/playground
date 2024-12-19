@@ -88,10 +88,10 @@ app.get("/my-first-react-counter", (req, res) => {
  */
 
 const { renderToPipeableStream } = require("react-dom/server");
-const StreamingApp = require("./im-streaming-html/Streaming.jsx");
+const NoStreamingApp = require("./im-streaming-html/NoStreaming.jsx");
 
 app.get("/no-streaming-html", (req, res) => {
-  const root = StreamingApp();
+  const root = NoStreamingApp();
   const html = renderToString(root);
 
   res.send(`<!DOCTYPE html>

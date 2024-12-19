@@ -13,16 +13,9 @@ module.exports = function () {
   }
 
   return (
-    <html lang="en-us">
-      <head>
-        <title>Hello World</title>
-      </head>
-      <body>
-        <div style={{ margin: "20px" }}>
-          <h1>Here is a Big Comment Section</h1>
-          {comments}
-        </div>
-      </body>
-    </html>
+    <div style={{ margin: "20px" }}>
+      <h1>Here is a Big Comment Section</h1>
+      {comments}
+    </div>
   );
 };
