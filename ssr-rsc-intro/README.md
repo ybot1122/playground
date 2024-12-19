@@ -90,13 +90,15 @@ In the next section, we will add streaming to our project.
 
 # SECTION 4: Streaming with `renderToPipeableStream` and `Suspense`
 
-In the previous section we rendered our HTML all at once, then delivered all the HTML all at once to the client. Streaming now makes it possible do deliver the HTML to the client in chunks. The advantage is that the client can start processing those chunks immediately. So instead of waiting for all the HTML to be downloaded, it can receive a chunk of HTML, process/render it, receive a chunk of HTML, process/render it, etc etc.
-
 This is made possible in Node.js with `react-dom/server`'s `renderToPipeableStream` [method](https://react.dev/reference/react-dom/server/renderToPipeableStream).
 
 Take a look at my code in `im-streaming-html/`. I made a new React App that renders a bunch of `<Comment>` components wrapped with `Suspense`. Inside the `Comment` component, I am making a fake "fetch" for comment data (you can see the "fetch" is actually a hardcoded `setTimeout`).
 
 Then in the `Comment` component, I am using React's `use()` hook to opt-in to Suspense.
+
+Let's pause here. I threw in a bunch of new React features and concepts. First, streaming, which is happening on the serverside.
+
+`renderToPipeableStream` is built on top of [Node.JS Web Streams](https://nodejs.org/api/webstreams.html) API. Learn more about the Streams API from [MDN docs](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API). The TLDR is instead of the server sending all the data all at once, it can send data in chunks. The client will receive chunks and can actually being processing those chunks immediately. 
 
 # Additional Resources
 - Implement ssr: https://www.youtube.com/watch?v=NwyQONeqRXA
