@@ -1,10 +1,12 @@
 const path = require("path");
 
 module.exports = {
-  entry: path.resolve(__dirname, "./my-first-react-app/client.js"),
+  entry: {
+    app: path.resolve(__dirname, "./my-first-react-app/client.js"),
+  },
   output: {
     path: path.resolve(__dirname, "./public"),
-    filename: "bundle.js",
+    filename: "[name].bundle.js",
   },
   module: {
     rules: [

@@ -78,7 +78,7 @@ app.get("/my-first-react-counter", (req, res) => {
         </head>
         <body>
             <div id="app-root">${html}</div>
-            <script src="/bundle.js"></script>
+            <script src="/app.bundle.js"></script>
         </body>
     </html>`);
 });

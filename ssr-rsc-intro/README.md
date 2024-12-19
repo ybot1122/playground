@@ -10,7 +10,7 @@ In this lesson, we will:
 
 Let's get started.
 
-# SECTION 1: My First Server Side Rendering
+# SECTION 1: Your First Serverside Rendering
 
 At the most basic, server side rendering is something that generates HTML during runtime on the server, and delivers it to the client. So in my example, you see the most straightforward example of serverside rendering: I generate a string containing HTML and insert my dynamic content in to the string. The string is then delivered to the client as HTML.
 
@@ -18,7 +18,7 @@ In my example, `localhost:3000/tell-me-the-time` will render an HTML page with t
 
 Congratulations. Serverside Rendering.
 
-# SECTION 2: Server Side Rendering with React
+# SECTION 2: Serverside Rendering React
 
 Now we will beef up our server side rendering, and add support for React! The magic sauce is:
 
@@ -62,7 +62,7 @@ Until you try clicking the increment button on the counter. Nothing happens. But
 
 Right now the client only has raw HTML. It does not have any javascript, so it is not able to "hook up" my interactive component to React features. What we need to do is send some Javascript to the client, and tell it to hook up my component to React. This is the "hydration" step you might have heard of. Indeed, this is more magic sauce from the `react-dom` package. We will do that in the next section.
 
-# SECTION 3: Hydrating our React App
+# SECTION 3: Serverside Rendering React with Clientside Hydration
 
 So we have HTML on the clientside, but the interactive Counter component is not working because there is no Javascript. What is our solution? We will use another API from `react-dom`:
 
@@ -72,15 +72,15 @@ ReactDOM.hydrateRoot(document.getElementById("app-root"), <App />);
 
 Take a look at the file `client.js`. There I have written a script: It imports react, react-dom, and the App, then it makes the `hydrateRoot` call. This script needs to run on the client, after the initial HTML is rendered.
 
-I use webpack to bundle this `client.js` file and output a `bundle.js` file which contains all the source code of React, React DOM, my React Components, in a single file.
+I use webpack to bundle this `client.js` file and output a `app.bundle.js` file which contains all the source code of React, React DOM, my React Components, in a single file.
 
 Then in the HTML, I add a new line:
 
 ```html
-<script src="/bundle.js"></script>
+<script src="/app.bundle.js"></script>
 ```
 
-When the client renders the HTML, it will then run into this line and download and run my `bundle.js` script. That script will run `hydrateRoot()` and if all is correct, my interactive counter component should be working.
+When the client renders the HTML, it will then run into this line and download and run my `app.bundle.js` script. That script will run `hydrateRoot()` and if all is correct, my interactive counter component should be working.
 
 Check it out at `localhost:3000/my-first-react-counter`.
 
@@ -88,17 +88,46 @@ Let's pause and see what we have accomplished: We are rendering React on the ser
 
 In the next section, we will add streaming to our project.
 
-# SECTION 4: Streaming with `renderToPipeableStream` and `Suspense`
+# SECTION 4: Serverside Rendering React with Streaming and Clientside Hydration
 
-This is made possible in Node.js with `react-dom/server`'s `renderToPipeableStream` [method](https://react.dev/reference/react-dom/server/renderToPipeableStream).
+Time to introduce the React `<Suspense>` API. When you wrap a component with Suspense, it will render a fallback component until the child component's data fetching is complete. At that point, it will switch to the child component with its data.
 
-Take a look at my code in `im-streaming-html/`. I made a new React App that renders a bunch of `<Comment>` components wrapped with `Suspense`. Inside the `Comment` component, I am making a fake "fetch" for comment data (you can see the "fetch" is actually a hardcoded `setTimeout`).
+Please take special note here, according to the [React docs](https://react.dev/reference/react/Suspense):
 
-Then in the `Comment` component, I am using React's `use()` hook to opt-in to Suspense.
+> Only Suspense-enabled data sources will activate the Suspense component. They include:
+>
+> - Data fetching with Suspense-enabled frameworks like Relay and Next.js
+> - Lazy-loading component code with lazy
+> - Reading the value of a cached Promise with use
+> Suspense does not detect when data is fetched inside an Effect or event handler.
+>
 
-Let's pause here. I threw in a bunch of new React features and concepts. First, streaming, which is happening on the serverside.
+That means if you do this:
 
-`renderToPipeableStream` is built on top of [Node.JS Web Streams](https://nodejs.org/api/webstreams.html) API. Learn more about the Streams API from [MDN docs](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API). The TLDR is instead of the server sending all the data all at once, it can send data in chunks. The client will receive chunks and can actually being processing those chunks immediately. 
+```jsx
+const Component = () => {
+  const [data, setData] = useState();
+  useEffect(() => {
+    fetchMyData().then((result) => setData(result))
+  }, []);
+
+  return <div>{data}</div>
+}
+```
+
+Then wrapping it with Suspense DOES NOTHING!
+
+```jsx
+<Suspense fallback={<div>Loading...</div>}>
+  <Component>
+</Suspense>
+```
+
+As the docs say, you must use special APIs from your framework, lazy-loading with `lazy`, or the built-in `use` hook.
+
+Now that you understand `Suspense`, take a look at my new app in the `im-streaming-html` directory. It renders a bunch of `<Comment>` components wrapped with `Suspense`. Inside the `Comment` component, I am making a fake "fetch" for comment data (you can see the "fetch" is actually a hardcoded `setTimeout`).
+
+
 
 # Additional Resources
 - Implement ssr: https://www.youtube.com/watch?v=NwyQONeqRXA
