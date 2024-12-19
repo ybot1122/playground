@@ -135,3 +135,4 @@ Now that you understand `Suspense`, take a look at my new app in the `im-streami
 - RSC nitty-gritty: https://www.plasmic.app/blog/how-react-server-components-work#life-of-an-rsc-render
 - RSC from scratch: https://www.youtube.com/watch?v=MaebEqhZR84&pp=ygUocmVhY3Qgc2VydmVyIGNvbXBvbmVudHMgZnJvbSBzY3JhdGNoIGJlbg%3D%3D
 - New Suspense SSR Architecture in React 18: https://github.com/reactwg/react-18/discussions/37
+- RSC no framework: https://timtech.blog/posts/react-server-components-rsc-no-framework/
