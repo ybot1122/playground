@@ -1,16 +1,22 @@
 # SSR and RSC Intro
 
-Hi. In this lesson, I will provide an overview of Serverside Rendering, React Server Components, and how they can be used together. It is important to disambiguate the two concepts, as they are intended to solve different problems and therefore should be see an as complementary or optional to each other. Using Serverside Rendering does not mean you have to use React Server Components and vice-versa.
+Hi. You have heard about about Serverside Rendering, Suspense/Streaming, and React Server Components.
 
-In this lesson, we will:
+My goal is to explain each concept **in isolation**.
 
-- Create our own serverside rendering using Express.
-- Create our own serverside rendering with React Server Components
-- Study and compare the differences in the payloads and bundling that happens, and what the server vs client does in each case.
+I think it is really important to separate these concepts, because a lot of guides, tutorials, and meta-frameworks lump them into one "thing". The reality is, they are all independent concepts. You can use any combination of these. You can also use none of these.
+
+Most likely, you are using a meta-framework like Next.JS and letting that meta-framework decide for you. Well in that case, how about a peek under the hood?
+
+To give you solid understanding, I am going to break out each of these into separate topics:
+
+- Serverside Rendering
+- Suspense and Streaming
+- React Server Components
 
 Let's get started.
 
-# SECTION 1: My First Server Side Rendering
+# SECTION 1: Your First Serverside Rendering
 
 At the most basic, server side rendering is something that generates HTML during runtime on the server, and delivers it to the client. So in my example, you see the most straightforward example of serverside rendering: I generate a string containing HTML and insert my dynamic content in to the string. The string is then delivered to the client as HTML.
 
@@ -18,7 +24,7 @@ In my example, `localhost:3000/tell-me-the-time` will render an HTML page with t
 
 Congratulations. Serverside Rendering.
 
-# SECTION 2: Server Side Rendering with React
+# SECTION 2: Serverside Rendering React
 
 Now we will beef up our server side rendering, and add support for React! The magic sauce is:
 
@@ -26,7 +32,7 @@ Now we will beef up our server side rendering, and add support for React! The ma
 const { renderToString } = require("react-dom/server");
 ```
 
-You can look up the docs for this method, but basically we give it a React component, and it will return the HTML of the entire React tree as a string.
+You can look up the [docs](https://react.dev/reference/react-dom/server/renderToString) for this method. We give it a React component, and it will return the HTML of the React tree as a string.
 
 But Wait!
 
@@ -41,7 +47,7 @@ require("@babel/register")({
 });
 ```
 
-Again, you can look up the docs for `@babel/register`. Now, I can import my React component!
+Now, I can import my React component.
 
 ```jsx
 const myFirstApp = require("./my-first-react-app/App.jsx");
@@ -58,55 +64,11 @@ res.send(`<html><body> ... ${html} ...</body>`);
 
 Visit `localhost:3000/my-first-react-app` to see our beautiful React app. Take a look at the React code in `my-first-react-app`. I'm passing props, using the `style` prop, and even some composition. Everything's looking great until...
 
-Until you try clicking the increment button on the counter. Nothing happens. But if you look at the code, I'm clearly using `React.useState()` and `button onClick` to update the counter. What happened?
+Until you try clicking the increment button on the counter. Nothing happens. But if you look at the code, I'm using `React.useState()` and `button onClick` to update the counter. What happened?
 
-Well, right now the client only has raw HTML. It does not have any javascript whatsoever, so it is not able to "hook up" my interactive component to those React features. What we need to do is send some Javascript to the client, and tell it to hook up my component to React. This is the "hydration" step you might have heard of. Indeed, this going to be more magic sauce from the `react-dom` package. We will do that in the next section.
+Right now the client only has raw HTML. It does not have any javascript, so it is not able to "hook up" my interactive component to React features. What we need to do is send some Javascript to the client, and tell it to hook up my component to React. This is the "hydration" step you might have heard of. Indeed, this is more magic sauce from the `react-dom` package. We will do that in the next section.
 
-**OK COOL, BUT WHAT ABOUT RSC AND STREAMING AND...** we are getting there. Understanding these first few sections will help us understand everything else. Let me direct your attention to the server logs. You will notice that I added some console logs:
-
-```jsx
-const root = myFirstApp();
-
-console.log(root);
-for (c in root.props.children) {
-  console.log(root.props.children[c]);
-}
-```
-
-What is _actually_ being passed to `renderToString()`? Well turns it out, it is objects.
-
-Here's how the top-level component is represented. Nothing crazy, right? You see the `props` and you see it has 4 items in its `children` array.
-
-```js
-{
-  '$$typeof': Symbol(react.transitional.element),
-  type: 'div',
-  key: null,
-  props: {
-    style: { margin: '20px' },
-    children: [ [Object], [Object], [Object], [Object] ]
-  },
-  _owner: null,
-  _store: {}
-}
-```
-
-Look at the `type` property. In the root object, it is `type: 'div'` which is simple. However, notice that some of the children actually have `type: [Function (anonymous)]`. There's one big problem with this: It is not **serializable**. You cannot "represent" a Function as a raw string, for example. Go ahead, try it:
-
-```js
-JSON.stringify({ func: () => console.log("a") });
-// output: {}
-```
-
-Since Functions are not serializable, we cannot send this representation from server to client. The data will be lost. That is why, when we "hydrate" on the client, we essentially render the entire React tree again, on the client.
-
-In later sections, we will see how RSC overcomes this by representing its components differently - in a format that is indeed **serializable**. This new representation is what then unlocks value from _streaming_ the data to the client.
-
-So hang tight! This will all be very valuable to understanding RSCs later.
-
-For now... onto the next section... Where were we? Oh yes, hydration. Let's make our Counter component interactive.
-
-# SECTION 3: Hydrating our React App
+# SECTION 3: Serverside Rendering React with Clientside Hydration
 
 So we have HTML on the clientside, but the interactive Counter component is not working because there is no Javascript. What is our solution? We will use another API from `react-dom`:
 
@@ -114,30 +76,95 @@ So we have HTML on the clientside, but the interactive Counter component is not 
 ReactDOM.hydrateRoot(document.getElementById("app-root"), <App />);
 ```
 
-Take a look at the file `client.js`. There I have written a script: It imports react, react-dom, and the App, then it makes the call above. This script needs to run on the client, after the initial HTML is rendered.
+Take a look at the file `client.js`. There I have written a script: It imports react, react-dom, and the App, then it makes the `hydrateRoot` call. This script needs to run on the client, after the initial HTML is rendered.
 
-So to create this script, I have to use a bundler. In this case, I use webpack to bundle this `client.js` file and output a `bundle.js` file which contains all the source code of React, React DOM, my React Components, etc.
+I use webpack to bundle this `client.js` file and output a `app.bundle.js` file which contains all the source code of React, React DOM, my React Components, in a single file.
 
 Then in the HTML, I add a new line:
 
 ```html
-<script src="/bundle.js"></script>
+<script src="/app.bundle.js"></script>
 ```
 
-When the client renders the HTML, it will then run into this line and download and run my `bundle.js` script. That script will run `hydrateRoot()` and if all is correct, my interactive counter component should be working.
+When the client renders the HTML, it will then run into this line and download and run my `app.bundle.js` script. That script will run `hydrateRoot()` and if all is correct, my interactive counter component should be working.
 
 Check it out at `localhost:3000/my-first-react-counter`.
 
 Let's pause and see what we have accomplished: We are rendering React on the serverside, delivering that rendered HTML to the clientside, and then hydrating our application on the clientside so it can be fully interactive. Well done.
 
-But wait a minute... Hydrating the React app on the clientside? Do you mean we are literally rebuilding the entire React tree on the clientside, **again** after we did that on the serverside? Indeed. Ideally, there is no actual diff in the HTML structure, so ideally `hydrateRoot` only attaches eventlisteners and Javascript functionality to existing DOM elements. But if it does detect a mismatch in the HTML, it could lead to rendering new HTML on the client.
+In the next section, we will add streaming to our project.
 
-Do you see the opportunity to optimize this hydration step?
+# SECTION 4: Serverside Rendering React with Suspense, Streaming, but WITHOUT Clientside Hydration
 
-I will give a hint: which part of our React app is actually interactive?
+I'm going to explain Suspense and Streaming. To do this, let me start by not using them.
 
-The opportunity to optimize is this: Why should we waste effort rerendering the entire React tree, when we know that the only component that needs to be hydrated is `<Counter />`?
+Please look at `im-streaming-html/NoStreaming.jsx`. You will see a "Comment Section" application, where each Comment component displays a loader while it is fetching its data. This is done with `useEffect`.
 
-Think about it - everything else in my app is static HTML. You literally saw it working perfectly in the last section without _any javascript at all!_ All I really needed was to hydrate my `<Counter />` component. What if the hydration step automatically knew to skip all that static HTML stuff, and just hydrate the `<Counter />`?
+Now look at the server code for `/no-streaming-html` (Line #93). Everything here should look familiar, I am using `renderToString` and hydrating on the clientside. Go ahead and visit http://localhost:3000/no-streaming-html.
 
-Indeed... React Server Components unlocks this! See you in Section 4...
+Everything looks good right? Each Comment component is "fetching" data and then rerenders when the data loads in. Here's the bottleneck:
+
+**None of the data fetching can start until hydration is complete!** Remember we are using `useEffect`, and that can only be used with React javascript, after hydration. So now we have a waterfall. These steps must happen in order.
+
+1. Render HTML on server and send to client
+2. Client receives HTML, downloads Javascript, and hydrates application
+3. Comment components start fetching (look at your browser console logs)
+
+Now, allow me to introduce Suspense and Streaming.
+
+- Streams are a [Web API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API). The main idea is that streams send data in chunks as the data becomes ready, and a receiver can process those chunks immediately as they come in.
+- Suspense is a React API. Suspense allows you to "magically" take advantage of streaming. Well, hopefully less magical after this section.
+
+Please look at `im-streaming-html/Streaming.jsx`. You can see I've implemented the same application, but this time using `<Suspense>`. On the server (Line #111), instead of `renderToString` I use a new API called `renderToPipeableStream`. Now I can stream chunks of data to the client as they become available. You will see this in action.
+
+Go ahead and load this page: http://localhost:3000/im-streaming-html
+
+Ok. So far everything looks the same. But wait, open the console logs in your browser. Nothing there. Check your server logs... The fetching all happened on the server. So how the heck did our client get "new HTML"? Because of streaming.
+
+Open the network inspector in your browser and reload the page. Click the `im-streaming-html` request and look at its "Timing" information.
+
+![image](./readme/networkinspector.png)
+
+Notice how the request doesn't actually finish after the initial HTML. It keeps open, receiving new HTML from the server. Eventually the request finishes at around 9 seconds. That's streaming in action. The server is sending HTML to the client for each Comment component as it becomes available.
+
+You can also see this in action using `curL`.
+
+```bash
+curl localhost:3000/streaming -N
+```
+
+Watch as new HTML comes in every second. This is exactly what's happening in the browser. Notice also that the browser doesn't wait for the request to finish. As new HTML comes in, it is processed and rendered immediately.
+
+So now you see how `Suspense` and `Streaming` is an optimization.
+
+> BONUS: If you're curious, open your inspector and see the HTML that got sent. See if you can figure out the "magic" that React is doing to replace the HTML elements as they come in.
+
+I must confess one detail.
+
+Notice that in the `im-streaming-html` page, I don't actually do any clientside hydration. Let's do that in the next section, because I want to also explain a new concept: "Selective Hydration".
+
+# SECTION 5: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration
+
+This section introduces the concept of "Selective Hydration".
+
+# SECTION 6: React Server Components
+
+Finally! We have arrived to the introduction of React Server Components. In order for this to make the most sense, I'm going to introduce you to RSC in isolation first. Then in the later sections, I will combine RSC with what we learned in previous sections to demonstrate how SSR, Suspense, and RSC all play together to enhance user experience and developer experience.
+
+Without further ado: React Server Components!
+
+# SECTION 7: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration AND React Server Components
+
+Alas, we have arrived.
+
+# SECTION 8: Conclusion
+
+Thank you so much for joining me on this guided tutorial. 
+
+# Additional Resources
+- Implement ssr: https://www.youtube.com/watch?v=NwyQONeqRXA
+- RSC vs SSR: https://www.youtube.com/watch?v=jEJEFAc8tSI
+- RSC nitty-gritty: https://www.plasmic.app/blog/how-react-server-components-work#life-of-an-rsc-render
+- RSC from scratch: https://www.youtube.com/watch?v=MaebEqhZR84&pp=ygUocmVhY3Qgc2VydmVyIGNvbXBvbmVudHMgZnJvbSBzY3JhdGNoIGJlbg%3D%3D
+- New Suspense SSR Architecture in React 18: https://github.com/reactwg/react-18/discussions/37
+- RSC no framework: https://timtech.blog/posts/react-server-components-rsc-no-framework/
