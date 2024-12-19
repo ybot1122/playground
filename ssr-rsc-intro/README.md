@@ -1,12 +1,18 @@
 # SSR and RSC Intro
 
-Hi. In this lesson, I will provide an overview of Serverside Rendering, React Server Components, and how they can be used together. It is important to disambiguate the two concepts, as they are intended to solve different problems and therefore should be see an as complementary or optional to each other. Using Serverside Rendering does not mean you have to use React Server Components and vice-versa.
+Hi. You have heard about about Serverside Rendering, Suspense/Streaming, and React Server Components.
 
-In this lesson, we will:
+My goal is to explain each concept **in isolation**.
 
-- Create our own serverside rendering using Express.
-- Create our own serverside rendering with React Server Components
-- Study and compare the differences in the payloads and bundling that happens, and what the server vs client does in each case.
+I think it is really important to separate these concepts, because a lot of guides, tutorials, and meta-frameworks lump them into one "thing". The reality is, they are all independent concepts. You can use any combination of these. You can also use none of these.
+
+Most likely, you are using a meta-framework like Next.JS and letting that meta-framework decide for you. Well in that case, how about a peek under the hood?
+
+To give you solid understanding, I am going to break out each of these into separate topics:
+
+- Serverside Rendering
+- Suspense and Streaming
+- React Server Components
 
 Let's get started.
 
@@ -88,39 +94,38 @@ Let's pause and see what we have accomplished: We are rendering React on the ser
 
 In the next section, we will add streaming to our project.
 
-# SECTION 4: Serverside Rendering React with Suspense, Streaming and Clientside Hydration
+# SECTION 4: Serverside Rendering React with Suspense, Streaming, but WITHOUT Clientside Hydration
 
-Time to introduce the React `<Suspense>` API. When you wrap a component with Suspense, it will render a fallback component until the child component's data fetching is complete. At that point, it will switch to the child component with its data.
+I'm going to explain Suspense and Streaming. To do this, let me start by not using them.
 
-But why should we use `Suspense`? To show the value of `<Suspense>`, let us implement an application without it. Please look at `im-streaming-html/NoStreaming.jsx`. You will see a "Comment Section" application, where each Comment component displays a loader while it is fetching its data.
-
-This is done with `useEffect`.
+Please look at `im-streaming-html/NoStreaming.jsx`. You will see a "Comment Section" application, where each Comment component displays a loader while it is fetching its data. This is done with `useEffect`.
 
 Now look at the server code for `/no-streaming-html` (Line #93). Everything here should look familiar, I am using `renderToString` and hydrating on the clientside. Go ahead and visit http://localhost:3000/no-streaming-html.
 
-Everything looks good right? Each Comment component is "fetching" data and then rerenders when the data loads in. Here's the problem:
+Everything looks good right? Each Comment component is "fetching" data and then rerenders when the data loads in. Here's the bottleneck:
 
-**None of the data fetching can start until hydration is complete!** Remember we are using `useEffect`, and that can only be used with React javascript, after hydration. So now we have a waterfall:
+**None of the data fetching can start until hydration is complete!** Remember we are using `useEffect`, and that can only be used with React javascript, after hydration. So now we have a waterfall. These steps must happen in order.
 
 1. Render HTML on server and send to client
 2. Client receives HTML, downloads Javascript, and hydrates application
-3. Comment components start fetching
+3. Comment components start fetching (look at your browser console logs)
 
-Look at the console.logs in your browser. Fetching only starts in the browser.
+Now, allow me to introduce Suspense and Streaming.
 
-Suspense and Streaming is going to allow us to blur the lines between all these steps. We can tell our server to start data fetching AND render the loading HTML. Then the client can start hydrating the application even BEFORE it has received data.
+- Streams are a [Web API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API). The main idea is that streams send data in chunks as the data becomes ready, and a receiver can process those chunks immediately as they come in.
+- Suspense is a React API. Suspense allows you to "magically" take advantage of streaming. Well, hopefully less magical after this section.
 
 Please look at `im-streaming-html/Streaming.jsx`. You can see I've implemented the same application, but this time using `<Suspense>`. On the server (Line #111), instead of `renderToString` I use a new API called `renderToPipeableStream`. Now I can stream chunks of data to the client as they become available. You will see this in action.
 
 Go ahead and load this page: http://localhost:3000/im-streaming-html
 
-Ok. So far everything looks the same. But wait, open the console logs in your browser. Nothing there. Check your server logs... The fetching all happened on the server. So how the heck did our client get "new HTML"? Because we're using streaming.
+Ok. So far everything looks the same. But wait, open the console logs in your browser. Nothing there. Check your server logs... The fetching all happened on the server. So how the heck did our client get "new HTML"? Because of streaming.
 
-Open your network inspector in your browser and reload the page. Click the `im-streaming-html` request and look at its "Timing" information.
+Open the network inspector in your browser and reload the page. Click the `im-streaming-html` request and look at its "Timing" information.
 
 ![image](./readme/networkinspector.png)
 
-Notice how the request doesn't actually finish after the initial HTML. It keeps open, receiving new HTML updates from the server. Eventually the request finishes at around 9 seconds. That's streaming in action. The server is sending HTML to the client for each Comment as it becomes available.
+Notice how the request doesn't actually finish after the initial HTML. It keeps open, receiving new HTML from the server. Eventually the request finishes at around 9 seconds. That's streaming in action. The server is sending HTML to the client for each Comment component as it becomes available.
 
 You can also see this in action using `curL`.
 
@@ -128,13 +133,33 @@ You can also see this in action using `curL`.
 curl localhost:3000/streaming -N
 ```
 
-Watch as new HTML comes in every second. This is exactly what's happening in the browser. Notice also that the browser doesn't wait for the request to finish. As new HTML comes in, it is processed and rendered.
+Watch as new HTML comes in every second. This is exactly what's happening in the browser. Notice also that the browser doesn't wait for the request to finish. As new HTML comes in, it is processed and rendered immediately.
 
 So now you see how `Suspense` and `Streaming` is an optimization.
 
 > BONUS: If you're curious, open your inspector and see the HTML that got sent. See if you can figure out the "magic" that React is doing to replace the HTML elements as they come in.
 
+I must confess one detail.
 
+Notice that in the `im-streaming-html` page, I don't actually do any clientside hydration. Let's do that in the next section, because I want to also explain a new concept: "Selective Hydration".
+
+# SECTION 5: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration
+
+This section introduces the concept of "Selective Hydration".
+
+# SECTION 6: React Server Components
+
+Finally! We have arrived to the introduction of React Server Components. In order for this to make the most sense, I'm going to introduce you to RSC in isolation first. Then in the later sections, I will combine RSC with what we learned in previous sections to demonstrate how SSR, Suspense, and RSC all play together to enhance user experience and developer experience.
+
+Without further ado: React Server Components!
+
+# SECTION 7: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration AND React Server Components
+
+Alas, we have arrived.
+
+# SECTION 8: Conclusion
+
+Thank you so much for joining me on this guided tutorial. 
 
 # Additional Resources
 - Implement ssr: https://www.youtube.com/watch?v=NwyQONeqRXA

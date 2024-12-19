@@ -26,18 +26,8 @@ const fetchData = function (commentId) {
 
 const Comment = function ({ commentId }) {
   const [data, setData] = React.useState(null);
-  const [isOpen, setIsOpen] = React.useState(false);
   React.useEffect(() => {
     fetchData(commentId).then((result) => setData(result));
   }, [commentId]);
-  return data ? (
-    <div>
-      <button onClick={() => setIsOpen(!isOpen)}>
-        Toggle Comment ${commentId}
-      </button>
-      {isOpen && <div>{data}</div>}
-    </div>
-  ) : (
-    <div>Loading...</div>
-  );
+  return data ? <div>{data}</div> : <div>Loading...</div>;
 };

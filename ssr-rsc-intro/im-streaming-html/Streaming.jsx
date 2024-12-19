@@ -30,14 +30,14 @@ const fetchData = function (commentId) {
   console.log(`fetching comment ${commentId}`);
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve({ data: `Fetched data for comment # ${commentId}` });
+      resolve(`Fetched data for comment # ${commentId}`);
     }, 1000 * commentId);
   });
 };
 
 const Comment = function ({ commentId }) {
   const promise = fetchData(commentId);
-  const { data } = React.use(promise); // What is `use()`? See comment below...
+  const data = React.use(promise); // What is `use()`? See comment below...
   return data ? <div>{data}</div> : null;
 };
 
