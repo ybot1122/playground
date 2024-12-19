@@ -33,7 +33,7 @@ app.get("/tell-me-the-time", (req, res) => {
 });
 
 /**
- * SECTION 2: Serverside Rendering with React
+ * SECTION 2: Serverside Rendering React
  */
 const { renderToString } = require("react-dom/server");
 require("@babel/register")({
@@ -44,11 +44,6 @@ const myFirstApp = require("./my-first-react-app/App.jsx");
 
 app.get("/my-first-react-app", (req, res) => {
   const root = myFirstApp();
-
-  console.log(root);
-  for (c in root.props.children) {
-    console.log(root.props.children[c]);
-  }
 
   const html = renderToString(root);
 
@@ -64,7 +59,7 @@ app.get("/my-first-react-app", (req, res) => {
 });
 
 /**
- * SECTION 3: Serverside Rendering with Hydrate on Clientside
+ * SECTION 3: Serverside Rendering React with Clientside Hydration
  */
 const webpack = require("webpack");
 const middleware = require("webpack-dev-middleware");
@@ -86,6 +81,23 @@ app.get("/my-first-react-counter", (req, res) => {
             <script src="/bundle.js"></script>
         </body>
     </html>`);
+});
+
+/**
+ * SECTION 4: Serverside Rendering React with Streaming and Clientside Hydration
+ */
+
+const { renderToPipeableStream } = require("react-dom/server");
+const StreamingApp = require("./im-streaming-html/Streaming.jsx");
+
+app.get("/im-streaming-html", (req, res) => {
+  const { pipe } = renderToPipeableStream(StreamingApp(), {
+    bootstrapScripts: [],
+    onShellReady() {
+      res.setHeader("content-type", "text/html");
+      pipe(res);
+    },
+  });
 });
 
 app.listen(port, () => {

@@ -26,7 +26,7 @@ Now we will beef up our server side rendering, and add support for React! The ma
 const { renderToString } = require("react-dom/server");
 ```
 
-You can look up the docs for this method, but basically we give it a React component, and it will return the HTML of the entire React tree as a string.
+You can look up the [docs](https://react.dev/reference/react-dom/server/renderToString) for this method. We give it a React component, and it will return the HTML of the React tree as a string.
 
 But Wait!
 
@@ -41,7 +41,7 @@ require("@babel/register")({
 });
 ```
 
-Again, you can look up the docs for `@babel/register`. Now, I can import my React component!
+Now, I can import my React component.
 
 ```jsx
 const myFirstApp = require("./my-first-react-app/App.jsx");
@@ -58,53 +58,9 @@ res.send(`<html><body> ... ${html} ...</body>`);
 
 Visit `localhost:3000/my-first-react-app` to see our beautiful React app. Take a look at the React code in `my-first-react-app`. I'm passing props, using the `style` prop, and even some composition. Everything's looking great until...
 
-Until you try clicking the increment button on the counter. Nothing happens. But if you look at the code, I'm clearly using `React.useState()` and `button onClick` to update the counter. What happened?
+Until you try clicking the increment button on the counter. Nothing happens. But if you look at the code, I'm using `React.useState()` and `button onClick` to update the counter. What happened?
 
-Well, right now the client only has raw HTML. It does not have any javascript whatsoever, so it is not able to "hook up" my interactive component to those React features. What we need to do is send some Javascript to the client, and tell it to hook up my component to React. This is the "hydration" step you might have heard of. Indeed, this going to be more magic sauce from the `react-dom` package. We will do that in the next section.
-
-**OK COOL, BUT WHAT ABOUT RSC AND STREAMING AND...** we are getting there. Understanding these first few sections will help us understand everything else. Let me direct your attention to the server logs. You will notice that I added some console logs:
-
-```jsx
-const root = myFirstApp();
-
-console.log(root);
-for (c in root.props.children) {
-  console.log(root.props.children[c]);
-}
-```
-
-What is _actually_ being passed to `renderToString()`? Well turns it out, it is objects.
-
-Here's how the top-level component is represented. Nothing crazy, right? You see the `props` and you see it has 4 items in its `children` array.
-
-```js
-{
-  '$$typeof': Symbol(react.transitional.element),
-  type: 'div',
-  key: null,
-  props: {
-    style: { margin: '20px' },
-    children: [ [Object], [Object], [Object], [Object] ]
-  },
-  _owner: null,
-  _store: {}
-}
-```
-
-Look at the `type` property. In the root object, it is `type: 'div'` which is simple. However, notice that some of the children actually have `type: [Function (anonymous)]`. There's one big problem with this: It is not **serializable**. You cannot "represent" a Function as a raw string, for example. Go ahead, try it:
-
-```js
-JSON.stringify({ func: () => console.log("a") });
-// output: {}
-```
-
-Since Functions are not serializable, we cannot send this representation from server to client. The data will be lost. That is why, when we "hydrate" on the client, we essentially render the entire React tree again, on the client.
-
-In later sections, we will see how RSC overcomes this by representing its components differently - in a format that is indeed **serializable**. This new representation is what then unlocks value from _streaming_ the data to the client.
-
-So hang tight! This will all be very valuable to understanding RSCs later.
-
-For now... onto the next section... Where were we? Oh yes, hydration. Let's make our Counter component interactive.
+Right now the client only has raw HTML. It does not have any javascript, so it is not able to "hook up" my interactive component to React features. What we need to do is send some Javascript to the client, and tell it to hook up my component to React. This is the "hydration" step you might have heard of. Indeed, this is more magic sauce from the `react-dom` package. We will do that in the next section.
 
 # SECTION 3: Hydrating our React App
 
@@ -114,9 +70,9 @@ So we have HTML on the clientside, but the interactive Counter component is not 
 ReactDOM.hydrateRoot(document.getElementById("app-root"), <App />);
 ```
 
-Take a look at the file `client.js`. There I have written a script: It imports react, react-dom, and the App, then it makes the call above. This script needs to run on the client, after the initial HTML is rendered.
+Take a look at the file `client.js`. There I have written a script: It imports react, react-dom, and the App, then it makes the `hydrateRoot` call. This script needs to run on the client, after the initial HTML is rendered.
 
-So to create this script, I have to use a bundler. In this case, I use webpack to bundle this `client.js` file and output a `bundle.js` file which contains all the source code of React, React DOM, my React Components, etc.
+I use webpack to bundle this `client.js` file and output a `bundle.js` file which contains all the source code of React, React DOM, my React Components, in a single file.
 
 Then in the HTML, I add a new line:
 
@@ -130,20 +86,17 @@ Check it out at `localhost:3000/my-first-react-counter`.
 
 Let's pause and see what we have accomplished: We are rendering React on the serverside, delivering that rendered HTML to the clientside, and then hydrating our application on the clientside so it can be fully interactive. Well done.
 
-But wait a minute... Hydrating the React app on the clientside? Do you mean we are literally rebuilding the entire React tree on the clientside, **again** after we did that on the serverside? Indeed. Ideally, there is no actual diff in the HTML structure, so ideally `hydrateRoot` only attaches eventlisteners and Javascript functionality to existing DOM elements. But if it does detect a mismatch in the HTML, it could lead to rendering new HTML on the client.
+In the next section, we will add streaming to our project.
 
-Do you see the opportunity to optimize this hydration step?
+# SECTION 4: Streaming with `renderToPipeableStream`
 
-I will give a hint: which part of our React app is actually interactive?
+In the previous section we rendered our HTML all at once, then delivered all the HTML all at once to the client. Streaming now makes it possible do deliver the HTML to the client in chunks. The advantage is that the client can start processing those chunks immediately. So instead of waiting for all the HTML to be downloaded, it can receive a chunk of HTML, process/render it, receive a chunk of HTML, process/render it, etc etc.
 
-The opportunity to optimize is this: Why should we waste effort rerendering the entire React tree, when we know that the only component that needs to be hydrated is `<Counter />`?
-
-Think about it - everything else in my app is static HTML. You literally saw it working perfectly in the last section without _any javascript at all!_ All I really needed was to hydrate my `<Counter />` component. What if the hydration step automatically knew to skip all that static HTML stuff, and just hydrate the `<Counter />`?
-
-Indeed... React Server Components unlocks this! See you in Section 4...
+This is made possible in Node.js with `react-dom/server`'s `renderToPipeableStream` [method](https://react.dev/reference/react-dom/server/renderToPipeableStream)
 
 # Additional Resources
 - Implement ssr: https://www.youtube.com/watch?v=NwyQONeqRXA
 - RSC vs SSR: https://www.youtube.com/watch?v=jEJEFAc8tSI
 - RSC nitty-gritty: https://www.plasmic.app/blog/how-react-server-components-work#life-of-an-rsc-render
 - RSC from scratch: https://www.youtube.com/watch?v=MaebEqhZR84&pp=ygUocmVhY3Qgc2VydmVyIGNvbXBvbmVudHMgZnJvbSBzY3JhdGNoIGJlbg%3D%3D
+- New Suspense SSR Architecture in React 18: https://github.com/reactwg/react-18/discussions/37
