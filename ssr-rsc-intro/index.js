@@ -90,6 +90,22 @@ app.get("/my-first-react-counter", (req, res) => {
 const { renderToPipeableStream } = require("react-dom/server");
 const StreamingApp = require("./im-streaming-html/Streaming.jsx");
 
+app.get("/no-streaming-html", (req, res) => {
+  const root = StreamingApp();
+  const html = renderToString(root);
+
+  res.send(`<!DOCTYPE html>
+    <html>
+        <head>
+            <title>Hello World</title>
+        </head>
+        <body>
+            <div id="app-root">${html}</div>
+            <script src="/suspense.bundle.js"></script>
+        </body>
+    </html>`);
+});
+
 app.get("/im-streaming-html", (req, res) => {
   const { pipe } = renderToPipeableStream(StreamingApp(), {
     bootstrapScripts: [],

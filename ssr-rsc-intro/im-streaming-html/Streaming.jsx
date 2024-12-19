@@ -5,8 +5,8 @@ module.exports = function () {
 
   for (let i = 0; i < 10; i++) {
     comments.push(
-      <React.Suspense fallback={<div>Loading comment...</div>}>
-        <Comment key={i} commentId={i} />
+      <React.Suspense fallback={<div>Loading comment...</div>} key={i}>
+        <Comment commentId={i} />
       </React.Suspense>
     );
   }
