@@ -88,44 +88,51 @@ Let's pause and see what we have accomplished: We are rendering React on the ser
 
 In the next section, we will add streaming to our project.
 
-# SECTION 4: Serverside Rendering React with Streaming and Clientside Hydration
+# SECTION 4: Serverside Rendering React with Suspense, Streaming and Clientside Hydration
 
 Time to introduce the React `<Suspense>` API. When you wrap a component with Suspense, it will render a fallback component until the child component's data fetching is complete. At that point, it will switch to the child component with its data.
 
-Please take special note here, according to the [React docs](https://react.dev/reference/react/Suspense):
+But why should we use `Suspense`? To show the value of `<Suspense>`, let us implement an application without it. Please look at `im-streaming-html/NoStreaming.jsx`. You will see a "Comment Section" application, where each Comment component displays a loader while it is fetching its data.
 
-> Only Suspense-enabled data sources will activate the Suspense component. They include:
->
-> - Data fetching with Suspense-enabled frameworks like Relay and Next.js
-> - Lazy-loading component code with lazy
-> - Reading the value of a cached Promise with use
-> Suspense does not detect when data is fetched inside an Effect or event handler.
->
+This is done with `useEffect`.
 
-That means if you do this:
+Now look at the server code for `/no-streaming-html` (Line #93). Everything here should look familiar, I am using `renderToString` and hydrating on the clientside. Go ahead and visit http://localhost:3000/no-streaming-html.
 
-```jsx
-const Component = () => {
-  const [data, setData] = useState();
-  useEffect(() => {
-    fetchMyData().then((result) => setData(result))
-  }, []);
+Everything looks good right? Each Comment component is "fetching" data and then rerenders when the data loads in. Here's the problem:
 
-  return <div>{data}</div>
-}
+**None of the data fetching can start until hydration is complete!** Remember we are using `useEffect`, and that can only be used with React javascript, after hydration. So now we have a waterfall:
+
+1. Render HTML on server and send to client
+2. Client receives HTML, downloads Javascript, and hydrates application
+3. Comment components start fetching
+
+Look at the console.logs in your browser. Fetching only starts in the browser.
+
+Suspense and Streaming is going to allow us to blur the lines between all these steps. We can tell our server to start data fetching AND render the loading HTML. Then the client can start hydrating the application even BEFORE it has received data.
+
+Please look at `im-streaming-html/Streaming.jsx`. You can see I've implemented the same application, but this time using `<Suspense>`. On the server (Line #111), instead of `renderToString` I use a new API called `renderToPipeableStream`. Now I can stream chunks of data to the client as they become available. You will see this in action.
+
+Go ahead and load this page: http://localhost:3000/im-streaming-html
+
+Ok. So far everything looks the same. But wait, open the console logs in your browser. Nothing there. Check your server logs... The fetching all happened on the server. So how the heck did our client get "new HTML"? Because we're using streaming.
+
+Open your network inspector in your browser and reload the page. Click the `im-streaming-html` request and look at its "Timing" information.
+
+![image](./readme/networkinspector.png)
+
+Notice how the request doesn't actually finish after the initial HTML. It keeps open, receiving new HTML updates from the server. Eventually the request finishes at around 9 seconds. That's streaming in action. The server is sending HTML to the client for each Comment as it becomes available.
+
+You can also see this in action using `curL`.
+
+```bash
+curl localhost:3000/streaming -N
 ```
 
-Then wrapping it with Suspense DOES NOTHING!
+Watch as new HTML comes in every second. This is exactly what's happening in the browser. Notice also that the browser doesn't wait for the request to finish. As new HTML comes in, it is processed and rendered.
 
-```jsx
-<Suspense fallback={<div>Loading...</div>}>
-  <Component>
-</Suspense>
-```
+So now you see how `Suspense` and `Streaming` is an optimization.
 
-As the docs say, you must use special APIs from your framework, lazy-loading with `lazy`, or the built-in `use` hook.
-
-Now that you understand `Suspense`, take a look at my new app in the `im-streaming-html` directory. It renders a bunch of `<Comment>` components wrapped with `Suspense`. Inside the `Comment` component, I am making a fake "fetch" for comment data (you can see the "fetch" is actually a hardcoded `setTimeout`).
+> BONUS: If you're curious, open your inspector and see the HTML that got sent. See if you can figure out the "magic" that React is doing to replace the HTML elements as they come in.
 
 
 

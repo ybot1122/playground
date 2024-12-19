@@ -84,7 +84,7 @@ app.get("/my-first-react-counter", (req, res) => {
 });
 
 /**
- * SECTION 4: Serverside Rendering React with Streaming and Clientside Hydration
+ * SECTION 4: Serverside Rendering React with Suspense, Streaming and Clientside Hydration
  */
 
 const { renderToPipeableStream } = require("react-dom/server");
@@ -105,6 +105,8 @@ app.get("/no-streaming-html", (req, res) => {
         </body>
     </html>`);
 });
+
+const StreamingApp = require("./im-streaming-html/Streaming.jsx");
 
 app.get("/im-streaming-html", (req, res) => {
   const { pipe } = renderToPipeableStream(StreamingApp(), {

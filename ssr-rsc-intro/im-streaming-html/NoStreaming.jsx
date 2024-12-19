@@ -16,17 +16,28 @@ module.exports = function () {
 };
 
 const fetchData = function (commentId) {
+  console.log(`fetching comment ${commentId}`);
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(`Fetched data for comment # ${commentId}`);
+      resolve(`hi there. I am comment# ${commentId}`);
     }, 1000 * commentId);
   });
 };
 
 const Comment = function ({ commentId }) {
   const [data, setData] = React.useState(null);
+  const [isOpen, setIsOpen] = React.useState(false);
   React.useEffect(() => {
     fetchData(commentId).then((result) => setData(result));
   }, [commentId]);
-  return data ? <div>{data}</div> : <div>Loading...</div>;
+  return data ? (
+    <div>
+      <button onClick={() => setIsOpen(!isOpen)}>
+        Toggle Comment ${commentId}
+      </button>
+      {isOpen && <div>{data}</div>}
+    </div>
+  ) : (
+    <div>Loading...</div>
+  );
 };
