@@ -132,6 +132,18 @@ app.get("/im-streaming-html-with-hydration-broken", (req, res) => {
   });
 });
 
+const StreamingAppHydration = require("./streaming-with-hydration/StreamingWithHydration.jsx");
+
+app.get("/im-streaming-html-with-hydration", (req, res) => {
+  const { pipe } = renderToPipeableStream(StreamingAppHydration(), {
+    bootstrapScripts: ["suspenseHydratedWorking.bundle.js"],
+    onShellReady() {
+      res.setHeader("content-type", "text/html");
+      pipe(res);
+    },
+  });
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });

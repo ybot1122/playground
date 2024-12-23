@@ -141,11 +141,19 @@ Notice that in the `im-streaming-html` page, I don't actually do any clientside 
 
 # SECTION 5: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration
 
-In the previous section we saw Suspense and HTML streaming in action. However, I did not hydrate the clientside application. Let's do that now. I created a new endpoint `/im-streaming-html-with-hydration` that adds a param to `bootstrapScripts`. The script I gave it is a `hydrateRoot()` call, like we have done in previous sections.
+In the previous section we saw Suspense and HTML streaming in action. However, I did not hydrate the clientside application. Let's do that now. I created a new endpoint `/im-streaming-html-with-hydration-broken` that adds a param to `bootstrapScripts`. The script I gave it is a `hydrateRoot()` call, like we have done in previous sections.
 
 Open the page, and check the console logs. Notice that fetching now happens in an infinite loop, and we also get a warning from React:
 
 `A component was suspended by an uncached promise. Creating promises inside a Client Component or hook is not yet supported, except via a Suspense-compatible library or framework.`
+
+The problem is that once we hydrate our application, it creates a new `fetchData` promise on the clientside. Once that `fetchData` promise resolves on the clientside it triggers a rerender that creates a new `fetchData` promise. Thus we get stuck in an infinite loop. Notice the React warning here:
+
+`except via a Suspense-compatible library or framework.`
+
+Unfortunately this is a touchy subject, and React has been criticized for potentially keeping this implementation "secret" to discourage us from integrating with Suspense on our own. Instead, we should rely on a meta-framework like NextJS or Remix. This has been a controversy / drama. In this tutorial, I will fix this error with a very straightforward logic: using an if-statement, if I am on the clientside, then return a Promise that never resolves; Eventually the streaming HTML will come in. This is absolutely not a production-ready solution, but I wanted to be transparent about this whole caveat.
+
+You can 
 
 # SECTION 6: React Server Components
 

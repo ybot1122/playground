@@ -5,6 +5,10 @@ module.exports = {
     app: path.resolve(__dirname, "./my-first-react-app/client.js"),
     suspense: path.resolve(__dirname, "./im-streaming-html/client.js"),
     suspenseHydrated: path.resolve(__dirname, "./im-streaming-html/client2.js"),
+    suspenseHydratedWorking: path.resolve(
+      __dirname,
+      "./streaming-with-hydration/client.js"
+    ),
   },
   output: {
     path: path.resolve(__dirname, "./public"),
