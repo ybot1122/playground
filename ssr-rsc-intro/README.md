@@ -151,9 +151,17 @@ The problem is that once we hydrate our application, it creates a new `fetchData
 
 `except via a Suspense-compatible library or framework.`
 
-Unfortunately this is a touchy subject, and React has been criticized for potentially keeping this implementation "secret" to discourage us from integrating with Suspense on our own. Instead, we should rely on a meta-framework like NextJS or Remix. This has been a controversy / drama. In this tutorial, I will fix this error with a very straightforward logic: using an if-statement, if I am on the clientside, then return a Promise that never resolves; Eventually the streaming HTML will come in. This is absolutely not a production-ready solution, but I wanted to be transparent about this whole caveat.
+Unfortunately this is a touchy subject, and React has been criticized for potentially keeping this implementation "secret" to discourage us from integrating with Suspense on our own. Instead, telling us to [rely on a meta-framework](https://react.dev/blog/2022/03/29/react-v18#suspense-in-data-frameworks) like NextJS or Remix. This has been a controversy. What's worse is that a lot of these meta-frameworks implement solutions using "React internals" that technically are not "recommended".
 
-You can 
+In this example, I am using the `use` hook which is the official way to make a component suspend. However, you can see the infinite loop problem we have.
+
+Check out my solution in `streaming-with-hydration/StreamingWithHydration.jsx` file. I replaced the `fetchData` method with a new one that throws promises instead of returning a promise.
+
+Now you can visit http://localhost:3000/im-streaming-html-with-hydration to see everything working.
+
+The sad truth is that "throwing promises" is not an officially recommended way to suspend a component. And React team warns us that this implementation may change in the future. Meanwhile, meta-frameworks have gone ahead with various implementations to solve this and make `Suspense` + `Streaming` ready for its users.
+
+It is a weird situation where the core library itself doesn't fully support the functionality, but frameworks built around it have gone on and touted as ready for production.
 
 # SECTION 6: React Server Components
 

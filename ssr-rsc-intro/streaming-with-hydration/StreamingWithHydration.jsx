@@ -2,11 +2,13 @@ const React = require("react");
 
 module.exports = function () {
   const comments = [];
+  const resource = [];
 
   for (let i = 0; i < 10; i++) {
+    resource.push(fetchData(i));
     comments.push(
       <React.Suspense fallback={<div>Loading comment...</div>} key={i}>
-        <Comment commentId={i} />
+        <Comment resource={resource[i]} />
       </React.Suspense>
     );
   }
@@ -26,21 +28,34 @@ module.exports = function () {
   );
 };
 
-const fetchData = function (commentId) {
-  if (typeof window !== "undefined") return new Promise(() => {});
-
-  console.log(`fetching comment ${commentId}`);
-  return new Promise((resolve) => {
+const fetchData = (commentId) => {
+  let status = "pending";
+  let result;
+  let fetching = new Promise((resolve) => {
     setTimeout(() => {
       resolve(`Fetched data for comment # ${commentId}`);
     }, 1000 * commentId);
+  }).then((data) => {
+    status = "fulfilled";
+    result = data;
   });
+
+  return {
+    read() {
+      if (status === "pending") {
+        throw fetching; // Suspend
+      } else if (status === "rejected") {
+        throw result; // Error
+      } else if (status === "fulfilled") {
+        return result; // Data
+      }
+    },
+  };
 };
 
-const Comment = function ({ commentId }) {
+const Comment = function ({ resource }) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const promise = fetchData(commentId);
-  const data = React.use(promise);
+  const data = resource.read();
   return data ? (
     <div>
       <button
