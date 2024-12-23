@@ -43,9 +43,8 @@ const Comment = function ({ commentId }) {
   const data = React.use(promise);
   return data ? (
     <div>
-      {data}
       <button onClick={() => setIsOpen(!isOpen)}>Open Comment</button>
-      {isOpen && <div>You opened the rest of the comment for {commentId}</div>}
+      {isOpen && <div>{data}</div>}
     </div>
   ) : null;
 };
