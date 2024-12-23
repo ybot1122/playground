@@ -186,3 +186,4 @@ Thank you so much for joining me on this guided tutorial.
 - RSC no framework: https://timtech.blog/posts/react-server-components-rsc-no-framework/
 - RSC overview https://www.joshwcomeau.com/react/server-components/
 - Kent-c-dodds RSC mvp: https://www.youtube.com/watch?v=4S5m5Jhneds
+- Data Fetching with RSC: https://www.youtube.com/watch?v=TQQPAU21ZUw&t=1048s
