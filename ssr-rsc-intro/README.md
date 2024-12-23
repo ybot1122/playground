@@ -137,11 +137,15 @@ Watch as new HTML comes in every second. This is exactly what's happening in the
 
 So now you see how `Suspense` and `Streaming` is an optimization.
 
-Notice that in the `im-streaming-html` page, I don't actually do any clientside hydration. Let's do that in the next section, because I want to also explain a new concept: "Selective Hydration".
+Notice that in the `im-streaming-html` page, I don't actually do any clientside hydration. Let's do that in the next section
 
 # SECTION 5: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration
 
-This section introduces the concept of "Selective Hydration".
+In the previous section we saw Suspense and HTML streaming in action. However, I did not hydrate the clientside application. Let's do that now. I created a new endpoint `/im-streaming-html-with-hydration` that adds a param to `bootstrapScripts`. The script I gave it is a `hydrateRoot()` call, like we have done in previous sections.
+
+Open the page, and check the console logs. Notice that fetching now happens in an infinite loop, and we also get a warning from React:
+
+`A component was suspended by an uncached promise. Creating promises inside a Client Component or hook is not yet supported, except via a Suspense-compatible library or framework.`
 
 # SECTION 6: React Server Components
 
@@ -155,7 +159,7 @@ Alas, we have arrived.
 
 # SECTION 8: Conclusion
 
-Thank you so much for joining me on this guided tutorial. 
+Thank you so much for joining me on this guided tutorial.
 
 # Additional Resources
 - Implement ssr: https://www.youtube.com/watch?v=NwyQONeqRXA

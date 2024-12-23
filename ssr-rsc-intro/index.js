@@ -122,7 +122,7 @@ app.get("/im-streaming-html", (req, res) => {
  * SECTION 5: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration
  */
 
-app.get("/im-streaming-html-with-hydration", (req, res) => {
+app.get("/im-streaming-html-with-hydration-broken", (req, res) => {
   const { pipe } = renderToPipeableStream(StreamingApp(), {
     bootstrapScripts: ["suspenseHydrated.bundle.js"],
     onShellReady() {
