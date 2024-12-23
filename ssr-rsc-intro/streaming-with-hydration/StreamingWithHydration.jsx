@@ -2,13 +2,11 @@ const React = require("react");
 
 module.exports = function () {
   const comments = [];
-  const resource = [];
 
   for (let i = 0; i < 10; i++) {
-    resource.push(fetchData(i));
     comments.push(
       <React.Suspense fallback={<div>Loading comment...</div>} key={i}>
-        <Comment resource={resource[i]} />
+        <Comment resource={fetchData(i)} />
       </React.Suspense>
     );
   }
