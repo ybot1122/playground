@@ -20,6 +20,19 @@ app.use(middleware(compiler));
 const RscPage = require("./react-server-components/App.jsx");
 const ReactServerDom = require("react-server-dom-webpack/server");
 
+app.get("/", (req, res) => {
+  res.send(`<!DOCTYPE html>
+        <html>
+            <head>
+                <title>Hello World</title>
+                <script src="/rsc.bundle.js"></script>
+            </head>
+            <body>
+                <div id="root"></div>
+            </body>
+        </html>`);
+});
+
 app.get("/rsc", (req, res) => {
   const moduleMap = {};
   const { pipe } = ReactServerDom.renderToPipeableStream(RscPage(), moduleMap);

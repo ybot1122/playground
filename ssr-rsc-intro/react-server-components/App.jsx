@@ -5,6 +5,7 @@ module.exports = function () {
     <div>
       <h1>Comments</h1>
       <Comments />
+      <Counter />
     </div>
   );
 };

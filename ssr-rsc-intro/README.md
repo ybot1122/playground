@@ -215,11 +215,15 @@ const ClientComponent = () => {
 }
 ```
 
-That is a 2 minute crash course introduction to React Server Components.
+Server components can be a parents of Client Components, but client component cannot be direct parents of server components. You can pass a server component to a client component as a prop.
+
+That was a 2 minute crash course introduction to React Server Components. There many more details and nuances that can go into this introduction, but this tutorial does not aim to go in-depth. What I really want to do in the next section is show how RSC fits in to this entire architecture with SSR and Suspense/Streaming.
 
 # SECTION 7: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration AND React Server Components
 
 Alas, we have arrived.
+
+I have created a brand new server named `rsc-server.js`. And it is run with the command `npm run start-rsc`.
 
 # SECTION 8: Conclusion
 

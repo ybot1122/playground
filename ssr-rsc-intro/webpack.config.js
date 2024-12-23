@@ -9,6 +9,7 @@ module.exports = {
       __dirname,
       "./streaming-with-hydration/client.js"
     ),
+    rsc: path.resolve(__dirname, "./react-server-components/client.js"),
   },
   output: {
     path: path.resolve(__dirname, "./public"),
