@@ -137,10 +137,6 @@ Watch as new HTML comes in every second. This is exactly what's happening in the
 
 So now you see how `Suspense` and `Streaming` is an optimization.
 
-> BONUS: If you're curious, open your inspector and see the HTML that got sent. See if you can figure out the "magic" that React is doing to replace the HTML elements as they come in.
-
-I must confess one detail.
-
 Notice that in the `im-streaming-html` page, I don't actually do any clientside hydration. Let's do that in the next section, because I want to also explain a new concept: "Selective Hydration".
 
 # SECTION 5: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration
