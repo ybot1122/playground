@@ -84,7 +84,7 @@ app.get("/my-first-react-counter", (req, res) => {
 });
 
 /**
- * SECTION 4: Serverside Rendering React with Suspense, Streaming and Clientside Hydration
+ * SECTION 4: Serverside Rendering React with Suspense, Streaming, but WITHOUT Clientside Hydration
  */
 
 const { renderToPipeableStream } = require("react-dom/server");
@@ -111,6 +111,32 @@ const StreamingApp = require("./im-streaming-html/Streaming.jsx");
 app.get("/im-streaming-html", (req, res) => {
   const { pipe } = renderToPipeableStream(StreamingApp(), {
     bootstrapScripts: [],
+    onShellReady() {
+      res.setHeader("content-type", "text/html");
+      pipe(res);
+    },
+  });
+});
+
+/**
+ * SECTION 5: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration
+ */
+
+app.get("/im-streaming-html-with-hydration-broken", (req, res) => {
+  const { pipe } = renderToPipeableStream(StreamingApp(), {
+    bootstrapScripts: ["suspenseHydrated.bundle.js"],
+    onShellReady() {
+      res.setHeader("content-type", "text/html");
+      pipe(res);
+    },
+  });
+});
+
+const StreamingAppHydration = require("./streaming-with-hydration/StreamingWithHydration.jsx");
+
+app.get("/im-streaming-html-with-hydration", (req, res) => {
+  const { pipe } = renderToPipeableStream(StreamingAppHydration(), {
+    bootstrapScripts: ["suspenseHydratedWorking.bundle.js"],
     onShellReady() {
       res.setHeader("content-type", "text/html");
       pipe(res);

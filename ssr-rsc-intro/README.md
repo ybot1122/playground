@@ -102,18 +102,18 @@ Please look at `im-streaming-html/NoStreaming.jsx`. You will see a "Comment Sect
 
 Now look at the server code for `/no-streaming-html` (Line #93). Everything here should look familiar, I am using `renderToString` and hydrating on the clientside. Go ahead and visit http://localhost:3000/no-streaming-html.
 
-Everything looks good right? Each Comment component is "fetching" data and then rerenders when the data loads in. Here's the bottleneck:
+Everything looks good right? Each Comment component is "fetching" data and then rerenders when the data loads in. There is a bottleneck:
 
-**None of the data fetching can start until hydration is complete!** Remember we are using `useEffect`, and that can only be used with React javascript, after hydration. So now we have a waterfall. These steps must happen in order.
+None of the data fetching can start until hydration is complete. Remember we are using `useEffect`, and that can only be used with React javascript, after hydration. So now we have a waterfall:
 
 1. Render HTML on server and send to client
 2. Client receives HTML, downloads Javascript, and hydrates application
 3. Comment components start fetching (look at your browser console logs)
 
-Now, allow me to introduce Suspense and Streaming.
+This is considered a waterfall because these steps must happen in order, one after the other. Let us see how Suspense and Streaming can mitigate this bottleneck.
 
 - Streams are a [Web API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API). The main idea is that streams send data in chunks as the data becomes ready, and a receiver can process those chunks immediately as they come in.
-- Suspense is a React API. Suspense allows you to "magically" take advantage of streaming. Well, hopefully less magical after this section.
+- Suspense is a React API that renders a fallback component while its child component is resolving a promise. Using this API, we can render the fallback UI immediately and then stream the updated UI once it is ready.
 
 Please look at `im-streaming-html/Streaming.jsx`. You can see I've implemented the same application, but this time using `<Suspense>`. On the server (Line #111), instead of `renderToString` I use a new API called `renderToPipeableStream`. Now I can stream chunks of data to the client as they become available. You will see this in action.
 
@@ -137,15 +137,31 @@ Watch as new HTML comes in every second. This is exactly what's happening in the
 
 So now you see how `Suspense` and `Streaming` is an optimization.
 
-> BONUS: If you're curious, open your inspector and see the HTML that got sent. See if you can figure out the "magic" that React is doing to replace the HTML elements as they come in.
-
-I must confess one detail.
-
-Notice that in the `im-streaming-html` page, I don't actually do any clientside hydration. Let's do that in the next section, because I want to also explain a new concept: "Selective Hydration".
+Notice that in the `im-streaming-html` page, I don't actually do any clientside hydration. Let's do that in the next section
 
 # SECTION 5: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration
 
-This section introduces the concept of "Selective Hydration".
+In the previous section we saw Suspense and HTML streaming in action. However, I did not hydrate the clientside application. Let's do that now. I created a new endpoint `/im-streaming-html-with-hydration-broken` that adds a param to `bootstrapScripts`. The script I gave it is a `hydrateRoot()` call, like we have done in previous sections.
+
+Open the page, and check the console logs. Notice that fetching now happens in an infinite loop, and we also get a warning from React:
+
+`A component was suspended by an uncached promise. Creating promises inside a Client Component or hook is not yet supported, except via a Suspense-compatible library or framework.`
+
+The problem is that once we hydrate our application, it creates a new `fetchData` promise on the clientside. Once that `fetchData` promise resolves on the clientside it triggers a rerender that creates a new `fetchData` promise. Thus we get stuck in an infinite loop. Notice the React warning here:
+
+`except via a Suspense-compatible library or framework.`
+
+Unfortunately this is a touchy subject, and React has been criticized for potentially keeping this implementation "secret" to discourage us from integrating with Suspense on our own. Instead, telling us to [rely on a meta-framework](https://react.dev/blog/2022/03/29/react-v18#suspense-in-data-frameworks) like NextJS or Remix. This has been a controversy. What's worse is that a lot of these meta-frameworks implement solutions using "React internals" that technically are not "recommended".
+
+In this example, I am using the `use` hook which is the official way to make a component suspend. However, you can see the infinite loop problem we have.
+
+Check out my solution in `streaming-with-hydration/StreamingWithHydration.jsx` file. I replaced the `fetchData` method with a new one that throws promises instead of returning a promise.
+
+Now you can visit http://localhost:3000/im-streaming-html-with-hydration to see everything working.
+
+The sad truth is that "throwing promises" is not an officially recommended way to suspend a component. And React team warns us that this implementation may change in the future. Meanwhile, meta-frameworks have gone ahead with various implementations to solve this and make `Suspense` + `Streaming` ready for its users.
+
+It is a weird situation where the core library itself doesn't fully support the functionality, but frameworks built around it have gone on and touted as ready for production.
 
 # SECTION 6: React Server Components
 
@@ -159,7 +175,7 @@ Alas, we have arrived.
 
 # SECTION 8: Conclusion
 
-Thank you so much for joining me on this guided tutorial. 
+Thank you so much for joining me on this guided tutorial.
 
 # Additional Resources
 - Implement ssr: https://www.youtube.com/watch?v=NwyQONeqRXA
@@ -168,3 +184,6 @@ Thank you so much for joining me on this guided tutorial.
 - RSC from scratch: https://www.youtube.com/watch?v=MaebEqhZR84&pp=ygUocmVhY3Qgc2VydmVyIGNvbXBvbmVudHMgZnJvbSBzY3JhdGNoIGJlbg%3D%3D
 - New Suspense SSR Architecture in React 18: https://github.com/reactwg/react-18/discussions/37
 - RSC no framework: https://timtech.blog/posts/react-server-components-rsc-no-framework/
+- RSC overview https://www.joshwcomeau.com/react/server-components/
+- Kent-c-dodds RSC mvp: https://www.youtube.com/watch?v=4S5m5Jhneds
+- Data Fetching with RSC: https://www.youtube.com/watch?v=TQQPAU21ZUw&t=1048s
