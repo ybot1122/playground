@@ -102,18 +102,18 @@ Please look at `im-streaming-html/NoStreaming.jsx`. You will see a "Comment Sect
 
 Now look at the server code for `/no-streaming-html` (Line #93). Everything here should look familiar, I am using `renderToString` and hydrating on the clientside. Go ahead and visit http://localhost:3000/no-streaming-html.
 
-Everything looks good right? Each Comment component is "fetching" data and then rerenders when the data loads in. Here's the bottleneck:
+Everything looks good right? Each Comment component is "fetching" data and then rerenders when the data loads in. There is a bottleneck:
 
-**None of the data fetching can start until hydration is complete!** Remember we are using `useEffect`, and that can only be used with React javascript, after hydration. So now we have a waterfall. These steps must happen in order.
+None of the data fetching can start until hydration is complete. Remember we are using `useEffect`, and that can only be used with React javascript, after hydration. So now we have a waterfall:
 
 1. Render HTML on server and send to client
 2. Client receives HTML, downloads Javascript, and hydrates application
 3. Comment components start fetching (look at your browser console logs)
 
-Now, allow me to introduce Suspense and Streaming.
+This is considered a waterfall because these steps must happen in order, one after the other. Let us see how Suspense and Streaming can mitigate this bottleneck.
 
 - Streams are a [Web API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API). The main idea is that streams send data in chunks as the data becomes ready, and a receiver can process those chunks immediately as they come in.
-- Suspense is a React API. Suspense allows you to "magically" take advantage of streaming. Well, hopefully less magical after this section.
+- Suspense is a React API that renders a fallback component while its child component is resolving a promise. Using this API, we can render the fallback UI immediately and then stream the updated UI once it is ready.
 
 Please look at `im-streaming-html/Streaming.jsx`. You can see I've implemented the same application, but this time using `<Suspense>`. On the server (Line #111), instead of `renderToString` I use a new API called `renderToPipeableStream`. Now I can stream chunks of data to the client as they become available. You will see this in action.
 
