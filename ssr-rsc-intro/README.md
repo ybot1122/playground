@@ -163,11 +163,59 @@ The sad truth is that "throwing promises" is not an officially recommended way t
 
 It is a weird situation where the core library itself doesn't fully support the functionality, but frameworks built around it have gone on and touted as ready for production.
 
-# SECTION 6: React Server Components
+# SECTION 6: React Server Components Introduction
 
-Finally! We have arrived to the introduction of React Server Components. In order for this to make the most sense, I'm going to introduce you to RSC in isolation first. Then in the later sections, I will combine RSC with what we learned in previous sections to demonstrate how SSR, Suspense, and RSC all play together to enhance user experience and developer experience.
+Finally we have arrived to the introduction of React Server Components. In order for this to make the most sense, I'm going to introduce you to RSC in isolation first. Then in the later sections, I will combine RSC with what we learned in previous sections to demonstrate how SSR, Suspense, and RSC all play together to enhance user experience and developer experience.
 
 Without further ado: React Server Components!
+
+With the introduction of RSC, we have a new type of component that only runs on the server (or only runs at build time). The output of that RSC is essentially immutable, so it will never be hydrated or rerendered on the client:
+
+```jsx
+const ServerComponent = () => {
+  return <div>Hello</div>
+}
+```
+
+Looks familiar enough? But with RSC we actually write async components that fetch data or do I/O:
+
+```jsx
+const ServerComponent = async () => {
+  const data = await db.getData();
+  return <div>{data.name} - {data.id}</div>
+}
+```
+
+Now things are looking different. Remember that as a RSC, it only runs once on the server (or once during build, if you are not using SSR). The client will never receive the code for `db` or `data`, it will only get that the output of this component.
+
+The key caveat to RSC is that we can no longer us a large subset of React APIs or add interactivity. For example:
+
+```jsx
+// NOT ALLOWED IN RSC: No hooks.
+const ServerComponent = () => {
+  const [isOpen, setIsOpen] = useState(false)
+  ...
+}
+
+// NOT ALLOWED IN RSC: No functions passed to components or HTML.
+const ServerComponent = () => {
+  ...
+  return <button onClick={() => console.log('hi')}>Hi</button>
+}
+```
+
+If you want to do this, then you have to explicitly mark a component as a client component by adding the "use client" directive at the top.
+
+```jsx
+"use client";
+
+const ClientComponent = () => {
+  const [isOpen, setIsOpen] = useState(false)
+  return isOpen ? <p>open</p> : <p>closed</p>
+}
+```
+
+That is a 2 minute crash course introduction to React Server Components.
 
 # SECTION 7: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration AND React Server Components
 
