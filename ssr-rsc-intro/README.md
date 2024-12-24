@@ -223,7 +223,25 @@ That was a 2 minute crash course introduction to React Server Components. There 
 
 Alas, we have arrived.
 
-I have created a brand new server named `rsc-server.js`. And it is run with the command `npm run start-rsc`.
+I have created a brand new server named `rsc-server.js`. And it is started with the command `npm run start-rsc`. When you boot it up, go and visit http://localhost:3000 - the app should look familiar. It's our list of comments being streamed in. But take a look at the network tab, specifically you see a call to an endpoint named `rsc`. Notice that it is no longer streaming raw HTML, but a different type of data format:
+
+```
+1:"$Sreact.suspense"
+3:{"name":"Comment","env":"Server","key":null,"owner":null,"props":{"commentId":0}}
+2:D"$3"
+5:{"name":"Comment","env":"Server","key":null,"owner":null,"props":{"commentId":1}}
+4:D"$5"
+```
+
+This is how we know we are using React Server Components. With RSC, we stream this format of JSON, and then on the clientside, we will consume that JSON to render the HTML.
+
+Take a look at `react-server-components/client.js` and notice that we no longer have `hydrateRoot`. Instead we are using `ReactServerDomWebpack.createFromFetch` and it is calling our `/rsc` endpoint. The `react-server-dom-webpack` is an experimental package published by React to support the new React Server Component architecture. It is able to parse the JSON you see above and render our React application. The huge advantage here is that we are no longer required to hydrate the entire React tree.
+
+That makes sense right? Because so far our React app doesn't actually do any "React" things... It is a pure server component application.
+
+But wait there is more. Take a look at `react-server-components/App.jsx`. Notice that our Comments list looks pretty much the same except we no longer have to deal with any funky `use()` hook or `throw promise` syntax. With React Server Components, we write the `await` straight into the component, and everything is magically wired up to suspend and stream to the client!
+
+There is just one missing piece. What if I actually DO want some interactivity on my website? Well for that, we need to write a Client Component.
 
 # SECTION 8: Conclusion
 

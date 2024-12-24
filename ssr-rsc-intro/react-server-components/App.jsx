@@ -1,32 +1,32 @@
 const React = require("react");
-//const Counter = require("./Counter");
 
 module.exports = function () {
+  const comments = [];
+  for (let i = 0; i < 10; i++) {
+    comments.push(
+      <React.Suspense fallback={<div>Loading comment...</div>} key={i}>
+        <Comment commentId={i} />
+      </React.Suspense>
+    );
+  }
+
   return (
     <div>
       <h1>Comments</h1>
-      <React.Suspense fallback={<div>Loading comments...</div>}>
-        <Comments />
-      </React.Suspense>
+      {comments}
     </div>
   );
 };
 
-async function getAllComments() {
+async function getComment(commentId) {
   const data = await new Promise((resolve, reject) => {
-    setTimeout(() => resolve(["comment1", "comment2", "comment3"]), 2000);
+    setTimeout(() => resolve(`I am comment #${commentId}`), 1000 * commentId);
   });
   return data;
 }
 
-async function Comments() {
-  const comments = await getAllComments();
+async function Comment({ commentId }) {
+  const data = await getComment(commentId);
 
-  return (
-    <ul>
-      {comments.map((c) => (
-        <li key={c}>{c}</li>
-      ))}
-    </ul>
-  );
+  return <div>{data}</div>;
 }
