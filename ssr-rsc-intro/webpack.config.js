@@ -1,4 +1,5 @@
 const path = require("path");
+const ReactServerWebpackPlugin = require("react-server-dom-webpack/plugin");
 
 module.exports = {
   entry: {
@@ -8,6 +9,11 @@ module.exports = {
     suspenseHydratedWorking: path.resolve(
       __dirname,
       "./streaming-with-hydration/client.js"
+    ),
+    rsc: path.resolve(__dirname, "./react-server-components/client.js"),
+    rscInteractive: path.resolve(
+      __dirname,
+      "./react-server-components/interactiveClient.js"
     ),
   },
   output: {
@@ -31,4 +37,5 @@ module.exports = {
   },
   mode: "development",
   stats: "minimal",
+  plugins: [new ReactServerWebpackPlugin({ isServer: false })],
 };
