@@ -22,7 +22,7 @@ Let's get started.
 
 At the most basic, server side rendering is something that generates HTML during runtime on the server, and delivers it to the client. So in my example, you see the most straightforward example of serverside rendering: I generate a string containing HTML and insert my dynamic content in to the string. The string is then delivered to the client as HTML.
 
-In my example, `localhost:3000/tell-me-the-time` will render an HTML page with the server's timestamp. Refresh and you will get a new timestamp. I included different HTML tags to demonstrate the the browser is indeed parsing the response as valid HTML.
+In my example, http://localhost:3000/tell-me-the-time will render an HTML page with the server's timestamp. Refresh and you will get a new timestamp. I included different HTML tags to demonstrate the the browser is indeed parsing the response as valid HTML.
 
 Congratulations. Serverside Rendering.
 
@@ -64,7 +64,7 @@ const html = renderToString(root);
 res.send(`<html><body> ... ${html} ...</body>`);
 ```
 
-Visit `localhost:3000/my-first-react-app` to see our beautiful React app. Take a look at the React code in `my-first-react-app`. I'm passing props, using the `style` prop, and even some composition. Everything's looking great until...
+Visit http://localhost:3000/my-first-react-app to see our beautiful React app. Take a look at the React code in `my-first-react-app`. I'm passing props, using the `style` prop, and even some composition. Everything's looking great until...
 
 Until you try clicking the increment button on the counter. Nothing happens. But if you look at the code, I'm using `React.useState()` and `button onClick` to update the counter. What happened?
 
@@ -90,7 +90,7 @@ Then in the HTML, I add a new line:
 
 When the client renders the HTML, it will then run into this line and download and run my `app.bundle.js` script. That script will run `hydrateRoot()` and if all is correct, my interactive counter component should be working.
 
-Check it out at `localhost:3000/my-first-react-counter`.
+Check it out at http://localhost:3000/my-first-react-counter.
 
 Let's pause and see what we have accomplished: We are rendering React on the serverside, delivering that rendered HTML to the clientside, and then hydrating our application on the clientside so it can be fully interactive. Well done.
 
