@@ -2,17 +2,19 @@
 
 Hi. You have heard about about Serverside Rendering, Suspense/Streaming, and React Server Components.
 
-My goal is to explain each concept **in isolation**.
+My goal is to explain each concept in isolation.
 
 I think it is really important to separate these concepts, because a lot of guides, tutorials, and meta-frameworks lump them into one "thing". The reality is, they are all independent concepts. You can use any combination of these. You can also use none of these.
 
 Most likely, you are using a meta-framework like Next.JS and letting that meta-framework decide for you. Well in that case, how about a peek under the hood?
 
-To give you solid understanding, I am going to break out each of these into separate topics:
+To give you solid understanding, this tutorial is broken into 3 major topics:
 
 - Serverside Rendering
-- Suspense and Streaming
+- Suspense (w/ Streaming if using SSR)
 - React Server Components
+
+By the end of this tutorial, we will have a "mini meta-framework" that supports all of these features. I hope by building it up piece by piece, you can see the value and synergy these features have with each other.
 
 Let's get started.
 
@@ -225,7 +227,7 @@ Alas, we have arrived.
 
 I have created a brand new server named `rsc-server.js`. And it is started with the command `npm run start-rsc`. When you boot it up, go and visit http://localhost:3000 - the app should look familiar. It's our list of comments being streamed in. But take a look at the network tab, specifically you see a call to an endpoint named `rsc`. Notice that it is no longer streaming raw HTML, but a different type of data format:
 
-```
+```js
 1:"$Sreact.suspense"
 3:{"name":"Comment","env":"Server","key":null,"owner":null,"props":{"commentId":0}}
 2:D"$3"
@@ -233,21 +235,37 @@ I have created a brand new server named `rsc-server.js`. And it is started with 
 4:D"$5"
 ```
 
-This is how we know we are using React Server Components. With RSC, we stream this format of JSON, and then on the clientside, we will consume that JSON to render the HTML.
+This is how we know we are using React Server Components. With RSC, we stream this format of JSON. On the clientside, we will consume that JSON to render the HTML.
 
-Take a look at `react-server-components/client.js` and notice that we no longer have `hydrateRoot`. Instead we are using `ReactServerDomWebpack.createFromFetch` and it is calling our `/rsc` endpoint. The `react-server-dom-webpack` is an experimental package published by React to support the new React Server Component architecture. It is able to parse the JSON you see above and render our React application. The huge advantage here is that we are no longer required to hydrate the entire React tree.
+Take a look at `react-server-components/client.js` and notice that we no longer have `hydrateRoot`. Instead we are using `ReactServerDomWebpack.createFromFetch` and it is calling our `/rsc` endpoint. The `react-server-dom-webpack` is an experimental package published by React to support the new React Server Component architecture. It is able to parse the JSON you see above and render our React application. One huge advantage here is that we are no longer required to hydrate the entire React tree.
 
 That makes sense right? Because so far our React app doesn't actually do any "React" things... It is a pure server component application.
 
-But wait there is more. Take a look at `react-server-components/App.jsx`. Notice that our Comments list looks pretty much the same except we no longer have to deal with any funky `use()` hook or `throw promise` syntax. With React Server Components, we write the `await` straight into the component, and everything is magically wired up to suspend and stream to the client!
+But wait there is more. Take a look at `react-server-components/App.jsx`. Notice that our Comment component no longer has to deal with any funky `use()` hook or `throw promise` syntax. With React Server Components, we write the `await` straight into the component, and everything is magically wired up to suspend and stream to the client.
 
-There is one missing piece. What if I actually DO want some interactivity on my website? Well for that, we need to write a Client Component. Look at `react-server-components/Counter.jsx` to see my Client Component. It is a standard counter component, except at the top of the file I wrote the `use client` directive. Now I will use this Client Component in my `InteractiveApp.jsx` file.
+There is one missing piece. What if I want some interactivity on my website? Well, we need to write a Client Component. Look at `react-server-components/Counter.jsx` to see my Client Component. It is a standard counter component, except at the top of the file I wrote the `use client` directive. Now I will use this Client Component in my `InteractiveApp.jsx` file.
 
-With client components, we must now use a `moduleMap` which tells the bundler where to fetch the code for specific client components. Yes that's right, the client component is no longer bundled into the application, but is only fetched on demand as it is rendered.
+With client components, provide a module map to the `ReactServerDom.renderToPipeableStream` method which tells the bundler where to fetch the code for specific client components. Yes that's right, the client component is no longer bundled into the application, but is only fetched on demand as it is rendered. In this case tutorial my application is super small so I have manually handwritten the module map. It tells the client to fetch `client0.bundle.js` to get the code for the Counter. Visit http://localhost:3000/interactive to see it all working together.
+
+Similar to Suspense, it is "not recommended to implement RSC architecture on your own". Again, there is some controversy about React nudging users to a meta-framework in order to take advantage of RSC. In this tutorial, I have implemented a bare version of it, but it is clear to see how the complexity and difficulties can spiral to support real world applications.
 
 # SECTION 8: Conclusion
 
 Thank you so much for joining me on this guided tutorial.
+
+I hope I was able to breakdown the following concepts:
+
+- Serverside Rendering
+- Suspense (w/ Streaming if using SSR)
+- React Server Components
+
+In a way that makes sense on each step of our tutorial. In SECTION 7, I tried to put it all together to demonstrate how these features all complement each other. When done properly, these features should greatly improve user experience and developer experience.
+
+I hope I was also fair and transparent about some of the agenda that the React team has to nudge developers towards meta-frameworks. This is a direction that has been communicated both explicitly and implicitly by the React team and its community: Use a meta-framework to take advantage of these features. Such an approach has stirred up controversy.
+
+I hope this tutorial has also equipped you with the decision making and trade off considerations for deciding if you need any or all of these features. Maybe your application is fine with plain SSR. Maybe you want to take advantage of SSR + Suspense/Streaming. Maybe you want to use RSC without SSR. Or maybe you want to use all of them. I hope this tutorial has helped you realize that these kinds of decisions are possible.
+
+Finally, I hope this tutorial was informative and useful. Please let me know of your feedback via GitHub Issues or Discussions! Thank you.
 
 # Additional Resources
 - Implement ssr: https://www.youtube.com/watch?v=NwyQONeqRXA
