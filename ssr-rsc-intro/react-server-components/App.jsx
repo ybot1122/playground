@@ -1,5 +1,5 @@
 const React = require("react");
-const Counter = require("./Counter");
+//const Counter = require("./Counter");
 
 module.exports = function () {
   return (
@@ -8,7 +8,6 @@ module.exports = function () {
       <React.Suspense fallback={<div>Loading comments...</div>}>
         <Comments />
       </React.Suspense>
-      <Counter />
     </div>
   );
 };

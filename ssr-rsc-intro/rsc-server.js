@@ -36,14 +36,10 @@ app.get("/", (req, res) => {
         </html>`);
 });
 
-const { readFileSync } = require("fs");
-
 app.get("/rsc", (req, res) => {
   const { pipe } = ReactServerDom.renderToPipeableStream(RscPage(), {});
   pipe(res);
 });
-
-app.get("/");
 
 app.listen(port, () => {
   console.log(`RSC app listening on port ${port}`);
