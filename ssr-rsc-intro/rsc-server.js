@@ -62,11 +62,12 @@ const InteractiveRsc = require("./react-server-components/InteractiveApp.jsx");
 
 app.get("/rsc-interactive", (req, res) => {
   const moduleMap = {
-    "/client0.bundle.js": {
-      id: "./react-server-components/Counter.jsx",
-      chunks: ["client0", "client0.bundle.js"],
-      name: "*",
-    },
+    "file:///Users/toby.liu/Repos/playground/ssr-rsc-intro/react-server-components/Counter.jsx":
+      {
+        id: "./react-server-components/Counter.jsx",
+        chunks: ["client0"],
+        name: "*",
+      },
   };
   const { pipe } = ReactServerDom.renderToPipeableStream(
     InteractiveRsc(),
