@@ -241,7 +241,9 @@ That makes sense right? Because so far our React app doesn't actually do any "Re
 
 But wait there is more. Take a look at `react-server-components/App.jsx`. Notice that our Comments list looks pretty much the same except we no longer have to deal with any funky `use()` hook or `throw promise` syntax. With React Server Components, we write the `await` straight into the component, and everything is magically wired up to suspend and stream to the client!
 
-There is just one missing piece. What if I actually DO want some interactivity on my website? Well for that, we need to write a Client Component.
+There is one missing piece. What if I actually DO want some interactivity on my website? Well for that, we need to write a Client Component. Look at `react-server-components/Counter.jsx` to see my Client Component. It is a standard counter component, except at the top of the file I wrote the `use client` directive. Now I will use this Client Component in my `InteractiveApp.jsx` file.
+
+With client components, we must now use a `moduleMap` which tells the bundler where to fetch the code for specific client components. Yes that's right, the client component is no longer bundled into the application, but is only fetched on demand as it is rendered.
 
 # SECTION 8: Conclusion
 
@@ -257,3 +259,4 @@ Thank you so much for joining me on this guided tutorial.
 - RSC overview https://www.joshwcomeau.com/react/server-components/
 - Kent-c-dodds RSC mvp: https://www.youtube.com/watch?v=4S5m5Jhneds
 - Data Fetching with RSC: https://www.youtube.com/watch?v=TQQPAU21ZUw&t=1048s
+- devtails RSC: https://devtails.xyz/@adam/tutorial-react-server-components
