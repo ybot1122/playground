@@ -1,10 +1,13 @@
 const React = require("react");
+const Counter = require("./Counter");
 
 module.exports = function () {
   return (
     <div>
       <h1>Comments</h1>
-      <Comments />
+      <React.Suspense fallback={<div>Loading comments...</div>}>
+        <Comments />
+      </React.Suspense>
       <Counter />
     </div>
   );

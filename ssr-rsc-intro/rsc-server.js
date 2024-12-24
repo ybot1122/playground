@@ -13,6 +13,9 @@ const webpackConfig = require("./webpack.config.js");
 const compiler = webpack(webpackConfig);
 app.use(middleware(compiler));
 
+const register = require("react-server-dom-webpack/node-register");
+register();
+
 /**
  * SECTION 7: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration AND React Server Components.
  */
@@ -25,19 +28,22 @@ app.get("/", (req, res) => {
         <html>
             <head>
                 <title>Hello World</title>
-                <script src="/rsc.bundle.js"></script>
             </head>
             <body>
                 <div id="root"></div>
+                <script src="/rsc.bundle.js"></script>
             </body>
         </html>`);
 });
 
+const { readFileSync } = require("fs");
+
 app.get("/rsc", (req, res) => {
-  const moduleMap = {};
-  const { pipe } = ReactServerDom.renderToPipeableStream(RscPage(), moduleMap);
+  const { pipe } = ReactServerDom.renderToPipeableStream(RscPage(), {});
   pipe(res);
 });
+
+app.get("/");
 
 app.listen(port, () => {
   console.log(`RSC app listening on port ${port}`);

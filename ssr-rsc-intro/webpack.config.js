@@ -1,4 +1,5 @@
 const path = require("path");
+const ReactServerWebpackPlugin = require("react-server-dom-webpack/plugin");
 
 module.exports = {
   entry: {
@@ -32,4 +33,5 @@ module.exports = {
   },
   mode: "development",
   stats: "minimal",
+  plugins: [new ReactServerWebpackPlugin({ isServer: false })],
 };

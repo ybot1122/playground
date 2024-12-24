@@ -2,8 +2,6 @@
 
 const React = require("react");
 
-import { useState } from "react";
-
 module.exports = function () {
   const [count, setCount] = React.useState(0);
 
