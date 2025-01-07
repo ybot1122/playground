@@ -2,17 +2,19 @@
 
 Hi. You have heard about about Serverside Rendering, Suspense/Streaming, and React Server Components.
 
-My goal is to explain each concept **in isolation**.
+My goal is to explain each concept in isolation.
 
 I think it is really important to separate these concepts, because a lot of guides, tutorials, and meta-frameworks lump them into one "thing". The reality is, they are all independent concepts. You can use any combination of these. You can also use none of these.
 
 Most likely, you are using a meta-framework like Next.JS and letting that meta-framework decide for you. Well in that case, how about a peek under the hood?
 
-To give you solid understanding, I am going to break out each of these into separate topics:
+To give you solid understanding, this tutorial is broken into 3 major topics:
 
 - Serverside Rendering
-- Suspense and Streaming
+- Suspense (w/ Streaming if using SSR)
 - React Server Components
+
+By the end of this tutorial, we will have a "mini meta-framework" that supports all of these features. I hope by building it up piece by piece, you can see the value and synergy these features have with each other.
 
 Let's get started.
 
@@ -20,7 +22,7 @@ Let's get started.
 
 At the most basic, server side rendering is something that generates HTML during runtime on the server, and delivers it to the client. So in my example, you see the most straightforward example of serverside rendering: I generate a string containing HTML and insert my dynamic content in to the string. The string is then delivered to the client as HTML.
 
-In my example, `localhost:3000/tell-me-the-time` will render an HTML page with the server's timestamp. Refresh and you will get a new timestamp. I included different HTML tags to demonstrate the the browser is indeed parsing the response as valid HTML.
+In my example, http://localhost:3000/tell-me-the-time will render an HTML page with the server's timestamp. Refresh and you will get a new timestamp. I included different HTML tags to demonstrate the the browser is indeed parsing the response as valid HTML.
 
 Congratulations. Serverside Rendering.
 
@@ -62,7 +64,7 @@ const html = renderToString(root);
 res.send(`<html><body> ... ${html} ...</body>`);
 ```
 
-Visit `localhost:3000/my-first-react-app` to see our beautiful React app. Take a look at the React code in `my-first-react-app`. I'm passing props, using the `style` prop, and even some composition. Everything's looking great until...
+Visit http://localhost:3000/my-first-react-app to see our beautiful React app. Take a look at the React code in `my-first-react-app`. I'm passing props, using the `style` prop, and even some composition. Everything's looking great until...
 
 Until you try clicking the increment button on the counter. Nothing happens. But if you look at the code, I'm using `React.useState()` and `button onClick` to update the counter. What happened?
 
@@ -88,7 +90,7 @@ Then in the HTML, I add a new line:
 
 When the client renders the HTML, it will then run into this line and download and run my `app.bundle.js` script. That script will run `hydrateRoot()` and if all is correct, my interactive counter component should be working.
 
-Check it out at `localhost:3000/my-first-react-counter`.
+Check it out at http://localhost:3000/my-first-react-counter.
 
 Let's pause and see what we have accomplished: We are rendering React on the serverside, delivering that rendered HTML to the clientside, and then hydrating our application on the clientside so it can be fully interactive. Well done.
 
@@ -163,19 +165,107 @@ The sad truth is that "throwing promises" is not an officially recommended way t
 
 It is a weird situation where the core library itself doesn't fully support the functionality, but frameworks built around it have gone on and touted as ready for production.
 
-# SECTION 6: React Server Components
+# SECTION 6: React Server Components Introduction
 
-Finally! We have arrived to the introduction of React Server Components. In order for this to make the most sense, I'm going to introduce you to RSC in isolation first. Then in the later sections, I will combine RSC with what we learned in previous sections to demonstrate how SSR, Suspense, and RSC all play together to enhance user experience and developer experience.
+Finally we have arrived to the introduction of React Server Components. In order for this to make the most sense, I'm going to introduce you to RSC in isolation first. Then in the later sections, I will combine RSC with what we learned in previous sections to demonstrate how SSR, Suspense, and RSC all play together to enhance user experience and developer experience.
 
 Without further ado: React Server Components!
+
+With the introduction of RSC, we have a new type of component that only runs on the server (or only runs at build time). The output of that RSC is essentially immutable, so it will never be hydrated or rerendered on the client:
+
+```jsx
+const ServerComponent = () => {
+  return <div>Hello</div>
+}
+```
+
+Looks familiar enough? But with RSC we actually write async components that fetch data or do I/O:
+
+```jsx
+const ServerComponent = async () => {
+  const data = await db.getData();
+  return <div>{data.name} - {data.id}</div>
+}
+```
+
+Now things are looking different. Remember that as a RSC, it only runs once on the server (or once during build, if you are not using SSR). The client will never receive the code for `db` or `data`, it will only get that the output of this component.
+
+The key caveat to RSC is that we can no longer us a large subset of React APIs or add interactivity. For example:
+
+```jsx
+// NOT ALLOWED IN RSC: No hooks.
+const ServerComponent = () => {
+  const [isOpen, setIsOpen] = useState(false)
+  ...
+}
+
+// NOT ALLOWED IN RSC: No functions passed to components or HTML.
+const ServerComponent = () => {
+  ...
+  return <button onClick={() => console.log('hi')}>Hi</button>
+}
+```
+
+If you want to do this, then you have to explicitly mark a component as a client component by adding the "use client" directive at the top.
+
+```jsx
+"use client";
+
+const ClientComponent = () => {
+  const [isOpen, setIsOpen] = useState(false)
+  return isOpen ? <p>open</p> : <p>closed</p>
+}
+```
+
+Server components can be a parents of Client Components, but client component cannot be direct parents of server components. You can pass a server component to a client component as a prop.
+
+That was a 2 minute crash course introduction to React Server Components. There many more details and nuances that can go into this introduction, but this tutorial does not aim to go in-depth. What I really want to do in the next section is show how RSC fits in to this entire architecture with SSR and Suspense/Streaming.
 
 # SECTION 7: Serverside Rendering React with Suspense, Streaming, WITH Clientside Hydration AND React Server Components
 
 Alas, we have arrived.
 
+I have created a brand new server named `rsc-server.js`. And it is started with the command `npm run start-rsc`. When you boot it up, go and visit http://localhost:3000 - the app should look familiar. It's our list of comments being streamed in. But take a look at the network tab, specifically you see a call to an endpoint named `rsc`. Notice that it is no longer streaming raw HTML, but a different type of data format:
+
+```js
+1:"$Sreact.suspense"
+3:{"name":"Comment","env":"Server","key":null,"owner":null,"props":{"commentId":0}}
+2:D"$3"
+5:{"name":"Comment","env":"Server","key":null,"owner":null,"props":{"commentId":1}}
+4:D"$5"
+```
+
+This is how we know we are using React Server Components. With RSC, we stream this format of JSON. On the clientside, we will consume that JSON to render the HTML.
+
+Take a look at `react-server-components/client.js` and notice that we no longer have `hydrateRoot`. Instead we are using `ReactServerDomWebpack.createFromFetch` and it is calling our `/rsc` endpoint. The `react-server-dom-webpack` is an experimental package published by React to support the new React Server Component architecture. It is able to parse the JSON you see above and render our React application. One huge advantage here is that we are no longer required to hydrate the entire React tree.
+
+That makes sense right? Because so far our React app doesn't actually do any "React" things... It is a pure server component application.
+
+But wait there is more. Take a look at `react-server-components/App.jsx`. Notice that our Comment component no longer has to deal with any funky `use()` hook or `throw promise` syntax. With React Server Components, we write the `await` straight into the component, and everything is magically wired up to suspend and stream to the client.
+
+There is one missing piece. What if I want some interactivity on my website? Well, we need to write a Client Component. Look at `react-server-components/Counter.jsx` to see my Client Component. It is a standard counter component, except at the top of the file I wrote the `use client` directive. Now I will use this Client Component in my `InteractiveApp.jsx` file.
+
+With client components, provide a module map to the `ReactServerDom.renderToPipeableStream` method which tells the bundler where to fetch the code for specific client components. Yes that's right, the client component is no longer bundled into the application, but is only fetched on demand as it is rendered. In this case tutorial my application is super small so I have manually handwritten the module map. It tells the client to fetch `client0.bundle.js` to get the code for the Counter. Visit http://localhost:3000/interactive to see it all working together.
+
+Similar to Suspense, it is "not recommended to implement RSC architecture on your own". Again, there is some controversy about React nudging users to a meta-framework in order to take advantage of RSC. In this tutorial, I have implemented a bare version of it, but it is clear to see how the complexity and difficulties can spiral to support real world applications.
+
 # SECTION 8: Conclusion
 
 Thank you so much for joining me on this guided tutorial.
+
+I hope I was able to breakdown the following concepts:
+
+- Serverside Rendering
+- Suspense (w/ Streaming if using SSR)
+- React Server Components
+
+In a way that makes sense on each step of our tutorial. In SECTION 7, I tried to put it all together to demonstrate how these features all complement each other. When done properly, these features should greatly improve user experience and developer experience.
+
+I hope I was also fair and transparent about some of the agenda that the React team has to nudge developers towards meta-frameworks. This is a direction that has been communicated both explicitly and implicitly by the React team and its community: Use a meta-framework to take advantage of these features. Such an approach has stirred up controversy.
+
+I hope this tutorial has also equipped you with the decision making and trade off considerations for deciding if you need any or all of these features. Maybe your application is fine with plain SSR. Maybe you want to take advantage of SSR + Suspense/Streaming. Maybe you want to use RSC without SSR. Or maybe you want to use all of them. I hope this tutorial has helped you realize that these kinds of decisions are possible.
+
+Finally, I hope this tutorial was informative and useful. Please let me know of your feedback via GitHub Issues or Discussions! Thank you.
 
 # Additional Resources
 - Implement ssr: https://www.youtube.com/watch?v=NwyQONeqRXA
@@ -187,3 +277,4 @@ Thank you so much for joining me on this guided tutorial.
 - RSC overview https://www.joshwcomeau.com/react/server-components/
 - Kent-c-dodds RSC mvp: https://www.youtube.com/watch?v=4S5m5Jhneds
 - Data Fetching with RSC: https://www.youtube.com/watch?v=TQQPAU21ZUw&t=1048s
+- devtails RSC: https://devtails.xyz/@adam/tutorial-react-server-components
