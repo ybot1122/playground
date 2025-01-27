@@ -23,6 +23,8 @@
   <body>
     <div id="main" contenteditable="true">Edit Me</div>
 
+    <p>I am a distraction</p>
+
     <div id="controls">
       <button id="controls-save">Save</button>
       <button id="controls-bold">Bold</button>
@@ -32,15 +34,22 @@
   </body>
 
   <script>
-    function surroundSelection(element) {
+    function surroundSelection(elementTag) {
       if (window.getSelection) {
         var sel = window.getSelection();
+
         if (sel.rangeCount && !sel.isCollapsed) {
           var range = sel.getRangeAt(0).cloneRange();
 
-          range.surroundContents(element);
-          sel.removeAllRanges();
-          sel.addRange(range);
+          console.log(range.startContainer.tagName);
+          const selectedText = sel.toString();
+          console.log(selectedText);
+          if (range.startContainer.tagName !== elementTag.toUpperCase()) {
+            const element = document.createElement(elementTag);
+            range.surroundContents(element);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          }
         }
       }
     }
@@ -58,7 +67,7 @@
 
     const boldBtn = document.getElementById("controls-bold");
     boldBtn.onclick = () => {
-      surroundSelection(document.createElement("b"));
+      surroundSelection("b");
     };
   </script>
 </html>
