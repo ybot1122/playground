@@ -1,28 +1,19 @@
 import Head from "next/head";
 import { Geist, Geist_Mono } from "next/font/google";
-import styles from "@/styles/Home.module.css";
 import { useQuery } from "@tanstack/react-query";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export default function Home() {
   const fetchUsers = async () => {
-    const res = await fetch("https://jsonplaceholder.typicode.cm/users");
+    const res = await fetch("https://jsonplaceholder.typicoe.com/users");
     return res.json();
   };
   const { data, status } = useQuery({
-    queryKey: "users",
+    queryKey: ["users"],
     queryFn: fetchUsers,
     throwOnError: true,
   });
+
+  console.log(status);
 
   return (
     <>
@@ -32,9 +23,10 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <h1>Hello</h1>
 
-      {status === "error" && <p>Error fetching data</p>}
-      {status === "loading" && <p>Fetching data...</p>}
+      {status === "error" && <div>Error fetching data</div>}
+      {status === "pending" && <div>Fetching data...</div>}
       {status === "success" && (
         <div>
           {data.map((user) => (
