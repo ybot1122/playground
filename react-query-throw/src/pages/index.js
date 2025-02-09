@@ -15,10 +15,14 @@ const geistMono = Geist_Mono({
 
 export default function Home() {
   const fetchUsers = async () => {
-    const res = await fetch("https://jsonplaceholder.typicode.com/users");
+    const res = await fetch("https://jsonplaceholder.typicode.cm/users");
     return res.json();
   };
-  const { data, status } = useQuery({ queryKey: "users", queryFn: fetchUsers });
+  const { data, status } = useQuery({
+    queryKey: "users",
+    queryFn: fetchUsers,
+    throwOnError: true,
+  });
 
   return (
     <>
