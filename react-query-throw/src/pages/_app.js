@@ -1,3 +1,4 @@
+import MyErrorBoundary from "@/MyErrorBoundary";
 import "@/styles/globals.css";
 import {
   QueryClient,
@@ -11,9 +12,9 @@ const queryClient = new QueryClient();
 export default function App({ Component, pageProps }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <ErrorBoundary>
+      <MyErrorBoundary>
         <Component {...pageProps} />
-      </ErrorBoundary>
+      </MyErrorBoundary>
     </QueryClientProvider>
   );
 }
