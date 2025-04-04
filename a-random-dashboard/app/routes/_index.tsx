@@ -1,5 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -67,6 +67,11 @@ export default function Index() {
     id: number;
     prompt: string;
   } | null>(null);
+  const [currentEditResponse, setCurrentEditResponse] = useState<string>("");
+
+  useEffect(() => {
+    setCurrentEditResponse("");
+  }, [isModalOpen]);
 
   const handleReveal = (id: number) => {
     setLoading((prev) => ({ ...prev, [id]: true }));
@@ -98,6 +103,21 @@ export default function Index() {
 
   return (
     <div className="flex flex-col m-10">
+      <div className="mb-4">
+        <button
+          className="bg-teal-500 text-white px-4 py-2 rounded hover:bg-teal-600"
+          onClick={() => {
+            const newId = Math.max(...data.map((item) => item.id)) + 1;
+            setData((prevData) => [
+              ...prevData,
+              { id: newId, prompt: "New Prompt", response: "" },
+            ]);
+            setRevealedResponses((prev) => ({ ...prev, [newId]: false }));
+          }}
+        >
+          Add New Prompt
+        </button>
+      </div>
       <div className="flex font-bold text-lg text-teal-700">
         <div className="w-1/12">Prompt ID</div>
         <div className="w-5/12">Prompt</div>
@@ -147,12 +167,25 @@ export default function Index() {
               className="w-full border border-gray-300 rounded p-2 mb-4"
               rows={4}
               value={currentEdit.prompt}
-              onChange={(e) =>
+              onChange={(e) => {
                 setCurrentEdit((prev) =>
                   prev ? { ...prev, prompt: e.target.value } : null,
-                )
-              }
+                );
+                setCurrentEditResponse("");
+              }}
             />
+            {currentEditResponse ? (
+              <div className="text-teal-500">{currentEditResponse}</div>
+            ) : (
+              <button
+                className="bg-teal-500 text-white px-4 py-2 rounded hover:bg-teal-600"
+                onClick={() =>
+                  setCurrentEditResponse("some response" + Date.now())
+                }
+              >
+                Query the Chatbot
+              </button>
+            )}
             <div className="flex justify-end">
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
