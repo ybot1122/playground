@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Counter Examples</title>
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+      .counter-section {
+        margin-bottom: 2em;
+      }
+      .counter-value {
+        font-size: 2em;
+        color: #2a7;
+      }
+
+      p,
+      div,
+      img {
+        width: 600px;
+        margin: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <select id="countTo">
+      <option value="10" default>10</option>
+      <option value="300">300</option>
+      <option value="500">500</option>
+    </select>
+
+    <div class="counter-section">
+      <h2>Counter with setInterval</h2>
+      <div id="interval-counter" class="counter-value">1</div>
+      <button onclick="startIntervalCounter()">Start</button>
+    </div>
+
+    <div class="counter-section">
+      <h2>Counter with setTimeout</h2>
+      <div id="timeout-counter" class="counter-value">1</div>
+      <button onclick="startTimeoutCounter()">Start</button>
+    </div>
+
+    <div class="counter-section">
+      <h2>Counter with requestAnimationFrame</h2>
+      <div id="raf-counter" class="counter-value">1</div>
+      <button onclick="startRafCounter()">Start</button>
+    </div>
+
+    <div>
+      <h2>Set Interval Performance Profile</h2>
+      <img src="./images/section2/setInterval.png" />
+      <p>
+        Notice the function call executes under the call tree of the event
+        callback. Notice it is one long task, where setInterval is called once
+        and the task keeps running until finished. This is an example of
+        javascript that will block the main thread, causing the page to feel
+        unresponsive while animation is running.
+      </p>
+    </div>
+
+    <div>
+      <h2>Set Timeout Performance Profile</h2>
+      <img src="./images/section2/setTimeout.png" />
+      <p>
+        In this implementation with setTimeout, the tasks a broken up, which
+        seems like an improvement. However, pay attention to the scripting tasks
+        that occur between each paint. The browser must block to setup and
+        execute setTimeout on each loop.
+      </p>
+    </div>
+
+    <div>
+      <h2>Request Animation Performance Profile</h2>
+      <img src="./images/section2/raf.png" />
+      <p>
+        With request animation frame, each task is split up and scripting
+        overhead is minimized. The profile shows multiple partially presented
+        frames here which is indication that the scripting is executing quickly
+        enough such that the browser doesn't have time to render every frame
+        before the next frame is ready.
+      </p>
+    </div>
+
+    <div>
+      <h2>More Observations</h2>
+      <p>
+        Another interesting thing to try is set the count limit to 500. Start
+        the first two counters using setTimeout and setInterval, then start the
+        raf counter. You will notice that the raf animation actually catches up
+        and counts to 500 before the other timers. This can be attributed to the
+        fact that:
+      </p>
+      <ul>
+        <li>
+          setTimeout and setInterval must compute on main thread, then can
+          paint.
+        </li>
+        <li>
+          requestAnimationFrame can execute anytime frame is about to be drawn,
+          so it can paint even while the browser is painting an update triggered
+          by setTimeout/setInterval
+        </li>
+      </ul>
+    </div>
+
+    <script>
+      const countToEl = document.getElementById("countTo");
+
+      // setInterval example
+      let intervalId = null;
+      function startIntervalCounter() {
+        clearInterval(intervalId);
+        let count = 1;
+        const countTo = parseInt(countToEl.value);
+        const el = document.getElementById("interval-counter");
+        el.textContent = count;
+        intervalId = setInterval(() => {
+          count++;
+          el.textContent = count;
+          if (count >= countTo) clearInterval(intervalId);
+        }, 10);
+      }
+
+      // setTimeout example
+      let timeoutId = null;
+      function startTimeoutCounter() {
+        clearTimeout(timeoutId);
+        let count = 1;
+        const countTo = parseInt(countToEl.value);
+        const el = document.getElementById("timeout-counter");
+        el.textContent = count;
+        function step() {
+          count++;
+          el.textContent = count;
+          if (count < countTo) {
+            timeoutId = setTimeout(step, 10);
+          }
+        }
+        timeoutId = setTimeout(step, 10);
+      }
+
+      // requestAnimationFrame example
+      let rafId = null;
+      function startRafCounter() {
+        cancelAnimationFrame(rafId);
+        let count = 1;
+        const countTo = parseInt(countToEl.value);
+        const el = document.getElementById("raf-counter");
+        el.textContent = count;
+        function step() {
+          count++;
+          el.textContent = count;
+          if (count < countTo) {
+            rafId = requestAnimationFrame(step);
+          }
+        }
+        rafId = requestAnimationFrame(step);
+      }
+    </script>
+  </body>
+</html>
