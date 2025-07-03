@@ -9,21 +9,84 @@ import "../styles/global.css";
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>Astro</title>
+
+    <style>
+      #meter {
+        width: 300px;
+        height: 50px;
+        background: #eee;
+        border-radius: 4px;
+        margin: 20px;
+        box-shadow: 0 2px 8px #ccc;
+      }
+      #level {
+        height: 100%;
+        background: linear-gradient(to right, #4caf50, #ffeb3b, #f44336);
+        border-radius: 4px 0 0 4px;
+        transition: width 0.06s;
+      }
+    </style>
   </head>
   <body>
     <h1>Astro</h1>
     <button id="camera" class="border-1 border-blue-500 p-2">Open Camera</button
     >
-    <video id="video"></video>
+    <video id="video" class="w-[600px] h-[300px]"></video>
+
+    <div id="meter">
+      <div id="level" style="width:0%"></div>
+    </div>
   </body>
   <script>
+    const videoEl: HTMLVideoElement = document.getElementById(
+      "video"
+    )! as HTMLVideoElement;
+    const levelDiv = document.getElementById("level")!;
+    // Takes a MediaStream object (not MediaSource!) and visualizes audio level.
+    // Example usage: visualizeAudioLevel(mediaStream);
+    function visualizeAudioLevel(mediaStream: MediaStream) {
+      const AudioContext = window.AudioContext;
+      const audioCtx = new AudioContext();
+      const source = audioCtx.createMediaStreamSource(mediaStream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      source.connect(analyser);
+
+      function draw() {
+        analyser.getByteTimeDomainData(dataArray);
+
+        // Calculate peak (max amplitude deviation from center)
+        let max = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          let v = Math.abs(dataArray[i] - 128);
+          if (v > max) max = v;
+        }
+
+        // Normalize: max possible deviation is 128
+        let percent = Math.min(100, (max / 128) * 100);
+
+        levelDiv.style.width = percent + "%";
+
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
     document.getElementById("camera")?.addEventListener("click", async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: true,
         });
-        /* use the stream */
+
+        console.log(stream, videoEl);
+
+        visualizeAudioLevel(stream);
+        videoEl.srcObject = stream;
+        videoEl.play();
       } catch (err) {
         /* handle the error */
       }
