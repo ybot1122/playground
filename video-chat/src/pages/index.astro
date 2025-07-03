@@ -4,6 +4,9 @@ import "../styles/global.css";
 
 <html lang="en">
   <head>
+    <script
+      src="https://unpkg.com/amazon-kinesis-video-streams-webrtc/dist/kvs-webrtc.min.js"
+    ></script>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
@@ -28,83 +31,103 @@ import "../styles/global.css";
     </style>
   </head>
   <body>
-    <h1>Astro</h1>
-    <button id="camera" class="border-1 border-blue-500 p-2">Open Camera</button
-    >
-    <video id="video" class="w-[600px] h-[300px]"></video>
-    <button id="mute" class="border-1 border-blue-500 p-2">Mute Video</button>
+    <main>
+      <div class="m-10 p-10 flex flex-col justify-center align-center">
+        <h1>Astro</h1>
+        <button
+          id="camera"
+          class="border-1 border-blue-500 p-2 hover:border-blue-900 w-[250px] cursor-pointer"
+          >Open Camera</button
+        >
+        <video id="video" class="w-[600px] h-[300px]"></video>
+        <div class="flex">
+          <button
+            id="mute"
+            class="border-1 border-blue-500 p-2 hover:border-blue-900 w-[250px] cursor-pointer"
+            >Mute Video</button
+          >
+          <div id="meter">
+            <div id="level" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script>
+      import { setupKinesisChannel } from "../scripts/setupKinesisChannel";
+      const videoEl: HTMLVideoElement = document.getElementById(
+        "video"
+      )! as HTMLVideoElement;
+      const levelDiv = document.getElementById("level")!;
+      const muteEl = document.getElementById("mute")!;
 
-    <div id="meter">
-      <div id="level" style="width:0%"></div>
-    </div>
+      muteEl.addEventListener("click", () => (videoEl.muted = !videoEl.muted));
+
+      let disconnectVisualizer: (() => void) | null = null;
+      let signalingClient: any;
+
+      function visualizeAudioLevel(mediaStream: MediaStream) {
+        const AudioContext = window.AudioContext;
+        const audioCtx = new AudioContext();
+        const source = audioCtx.createMediaStreamSource(mediaStream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        source.connect(analyser);
+
+        disconnectVisualizer = () => source.disconnect(analyser);
+
+        function draw() {
+          analyser.getByteTimeDomainData(dataArray);
+
+          // Calculate peak (max amplitude deviation from center)
+          let max = 0;
+          for (let i = 0; i < bufferLength; i++) {
+            let v = Math.abs(dataArray[i] - 128);
+            if (v > max) max = v;
+          }
+
+          // Normalize: max possible deviation is 128
+          let percent = Math.min(100, (max / 128) * 100);
+
+          levelDiv.style.width = percent + "%";
+
+          requestAnimationFrame(draw);
+        }
+        draw();
+      }
+
+      document.getElementById("camera")?.addEventListener("click", async () => {
+        if (videoEl.srcObject) {
+          if (!!disconnectVisualizer) {
+            disconnectVisualizer();
+          }
+          if (!!signalingClient) {
+            signalingClient.close();
+          }
+          videoEl.srcObject = null;
+          return;
+        }
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true,
+          });
+
+          console.log(stream, videoEl);
+
+          visualizeAudioLevel(stream);
+          videoEl.srcObject = stream;
+          videoEl.play();
+
+          signalingClient = await setupKinesisChannel(stream);
+        } catch (err) {
+          console.log(err);
+          /* handle the error */
+        }
+      });
+    </script>
   </body>
-  <script>
-    const videoEl: HTMLVideoElement = document.getElementById(
-      "video"
-    )! as HTMLVideoElement;
-    const levelDiv = document.getElementById("level")!;
-    const muteEl = document.getElementById("mute")!;
-
-    muteEl.addEventListener("click", () => (videoEl.muted = !videoEl.muted));
-
-    let disconnectVisualizer: (() => void) | null = null;
-
-    function visualizeAudioLevel(mediaStream: MediaStream) {
-      const AudioContext = window.AudioContext;
-      const audioCtx = new AudioContext();
-      const source = audioCtx.createMediaStreamSource(mediaStream);
-      const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 256;
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-
-      source.connect(analyser);
-
-      disconnectVisualizer = () => source.disconnect(analyser);
-
-      function draw() {
-        analyser.getByteTimeDomainData(dataArray);
-
-        // Calculate peak (max amplitude deviation from center)
-        let max = 0;
-        for (let i = 0; i < bufferLength; i++) {
-          let v = Math.abs(dataArray[i] - 128);
-          if (v > max) max = v;
-        }
-
-        // Normalize: max possible deviation is 128
-        let percent = Math.min(100, (max / 128) * 100);
-
-        levelDiv.style.width = percent + "%";
-
-        requestAnimationFrame(draw);
-      }
-      draw();
-    }
-
-    document.getElementById("camera")?.addEventListener("click", async () => {
-      if (videoEl.srcObject) {
-        if (!!disconnectVisualizer) {
-          disconnectVisualizer();
-        }
-        videoEl.srcObject = null;
-        return;
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-
-        console.log(stream, videoEl);
-
-        visualizeAudioLevel(stream);
-        videoEl.srcObject = stream;
-        videoEl.play();
-      } catch (err) {
-        /* handle the error */
-      }
-    });
-  </script>
 </html>
