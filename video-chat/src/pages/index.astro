@@ -32,6 +32,7 @@ import "../styles/global.css";
     <button id="camera" class="border-1 border-blue-500 p-2">Open Camera</button
     >
     <video id="video" class="w-[600px] h-[300px]"></video>
+    <button id="mute" class="border-1 border-blue-500 p-2">Mute Video</button>
 
     <div id="meter">
       <div id="level" style="width:0%"></div>
@@ -42,8 +43,12 @@ import "../styles/global.css";
       "video"
     )! as HTMLVideoElement;
     const levelDiv = document.getElementById("level")!;
-    // Takes a MediaStream object (not MediaSource!) and visualizes audio level.
-    // Example usage: visualizeAudioLevel(mediaStream);
+    const muteEl = document.getElementById("mute")!;
+
+    muteEl.addEventListener("click", () => (videoEl.muted = !videoEl.muted));
+
+    let disconnectVisualizer: (() => void) | null = null;
+
     function visualizeAudioLevel(mediaStream: MediaStream) {
       const AudioContext = window.AudioContext;
       const audioCtx = new AudioContext();
@@ -54,6 +59,8 @@ import "../styles/global.css";
       const dataArray = new Uint8Array(bufferLength);
 
       source.connect(analyser);
+
+      disconnectVisualizer = () => source.disconnect(analyser);
 
       function draw() {
         analyser.getByteTimeDomainData(dataArray);
@@ -76,6 +83,14 @@ import "../styles/global.css";
     }
 
     document.getElementById("camera")?.addEventListener("click", async () => {
+      if (videoEl.srcObject) {
+        if (!!disconnectVisualizer) {
+          disconnectVisualizer();
+        }
+        videoEl.srcObject = null;
+        return;
+      }
+
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
