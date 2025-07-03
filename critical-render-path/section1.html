@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Button Animation Example</title>
+    <style>
+      body {
+        width: 100vw;
+      }
+
+      div {
+        display: flex;
+        justify-content: start;
+        align-items: start;
+        padding: 10px;
+      }
+
+      p,
+      img {
+        width: 600px;
+        margin: 10px;
+      }
+
+      .box {
+        width: 100px;
+        height: 40px;
+        color: white;
+        border: none;
+        margin: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        display: inline-block;
+        background: #fcaf50;
+      }
+
+      .animate-size {
+        transition:
+          width 0.5s,
+          height 0.5s;
+        background: #4caf50;
+      }
+      .size-changed {
+        width: 200px;
+        height: 80px;
+      }
+
+      .animate-transform {
+        transition: transform 0.5s;
+        transform-origin: top left;
+        background: #2196f3;
+      }
+      .transform-changed {
+        transform: scale(2);
+      }
+    </style>
+  </head>
+  <body>
+    <div style="flex-direction: column">
+      <h1>Animation with Layout + Paint vs Animation with Transform</h1>
+      <p>
+        In this example, we will explore the differences between animating
+        elements using layout and paint properties (like width and height)
+        versus using transform properties (like scale).
+      </p>
+      <p>
+        Click the "Animate Size" button to trigger animation of width/height.
+        Click the "Animate Transform" button to trigger animation of scale.
+      </p>
+    </div>
+    <div>
+      <button id="sizeBtn" class="box animate-size">Animate Size</button>
+      <div class="box">Hello</div>
+    </div>
+    <div>
+      <button id="transformBtn" class="box animate-transform">
+        Animate Transform
+      </button>
+      <div class="box">Hello</div>
+    </div>
+    <div style="flex-direction: column">
+      <h3>Performance Profile When Animating Width/Height</h3>
+      <img src="./images/section1//cpu-graph-animate.png" width="600" />
+      <p>
+        Chrome performance profile (CPU throttled 20x) when animating
+        width/height. Notice several long tasks and skipped frames. Also notice
+        how each long task has purple and green events underneath them. These
+        are rendering pipeline steps (style, layout, paint, composite). All the
+        steps are being triggered for each frame of the animation. The
+        computation for each frame takes so long that frames have to be skipped.
+      </p>
+    </div>
+    <div style="flex-direction: column">
+      <h3>Performance Profile When Using CSS Transform</h3>
+      <img src="./images/section1//cpu-graph-transform.png" width="600" />
+      <p>
+        Chrome performance profile (CPU throttled 20x) when using CSS transform
+        scale. Notice significantly fewer long tasks and no skipped frames.
+      </p>
+    </div>
+
+    <script>
+      const sizeBtn = document.getElementById("sizeBtn");
+      const transformBtn = document.getElementById("transformBtn");
+
+      sizeBtn.addEventListener("click", () => {
+        sizeBtn.classList.toggle("size-changed");
+      });
+
+      transformBtn.addEventListener("click", () => {
+        transformBtn.classList.toggle("transform-changed");
+      });
+    </script>
+  </body>
+</html>
