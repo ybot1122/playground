@@ -7,9 +7,7 @@ import {
 
 export const server = {
   getChannelEndpoints: defineAction({
-    input: z.object({
-      name: z.string(),
-    }),
+    input: z.object({}),
     handler: async (input) => {
       // 1. Get channel ARN
       const kinesisVideoClient = new KinesisVideoClient({

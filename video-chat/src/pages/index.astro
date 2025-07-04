@@ -1,9 +1,13 @@
 ---
 import "../styles/global.css";
+import { actions } from "astro:actions";
 ---
 
 <html lang="en">
   <head>
+    <script
+      src="https://unpkg.com/amazon-kinesis-video-streams-webrtc/dist/kvs-webrtc.min.js"
+    ></script>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
@@ -50,7 +54,8 @@ import "../styles/global.css";
       </div>
     </main>
     <script>
-      import { setupKinesisChannel } from "../scripts/setupKinesisChannel";
+      import { actions } from "astro:actions";
+
       const videoEl: HTMLVideoElement = document.getElementById(
         "video"
       )! as HTMLVideoElement;
@@ -60,7 +65,7 @@ import "../styles/global.css";
       muteEl.addEventListener("click", () => (videoEl.muted = !videoEl.muted));
 
       let disconnectVisualizer: (() => void) | null = null;
-      let signalingClient: { close: () => void };
+      let signalingClient: { close: () => void } | null = null;
 
       function visualizeAudioLevel(mediaStream: MediaStream) {
         const AudioContext = window.AudioContext;
@@ -100,8 +105,8 @@ import "../styles/global.css";
           if (!!disconnectVisualizer) {
             disconnectVisualizer();
           }
-          if (!!signalingClient) {
-            signalingClient.close();
+          if (signalingClient !== null) {
+            //signalingClient.close();
           }
           videoEl.srcObject = null;
           return;
@@ -113,13 +118,28 @@ import "../styles/global.css";
             audio: true,
           });
 
-          console.log(stream, videoEl);
-
           visualizeAudioLevel(stream);
           videoEl.srcObject = stream;
           videoEl.play();
 
-          signalingClient = await setupKinesisChannel(stream);
+          const { data, error } = await actions.getChannelEndpoints({});
+
+          if (!data || error) {
+            throw new Error("failed to get channel endpoints");
+          }
+
+          const signalingClient = new (window as any).KVSWebRTC.SignalingClient(
+            {
+              channelARN: import.meta.env.PUBLIC_AWS_CHANNEL_ARN,
+              channelEndpoint: data.wss,
+              role: "MASTER",
+              region: import.meta.env.PUBLIC_AWS_REGION,
+              credentials: {
+                accessKeyId: import.meta.env.PUBLIC_AWS_ACCESS_KEY,
+                secretAccessKey: import.meta.env.PUBLIC_AWS_SECRET_ACCESS_KEY,
+              },
+            }
+          );
         } catch (err) {
           console.log(err);
           /* handle the error */
