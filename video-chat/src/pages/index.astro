@@ -65,7 +65,7 @@ import { actions } from "astro:actions";
       muteEl.addEventListener("click", () => (videoEl.muted = !videoEl.muted));
 
       let disconnectVisualizer: (() => void) | null = null;
-      let signalingClient: { close: () => void } | null = null;
+      let signalingClient: any = null;
 
       function visualizeAudioLevel(mediaStream: MediaStream) {
         const AudioContext = window.AudioContext;
@@ -106,7 +106,7 @@ import { actions } from "astro:actions";
             disconnectVisualizer();
           }
           if (signalingClient !== null) {
-            //signalingClient.close();
+            signalingClient.close();
           }
           videoEl.srcObject = null;
           return;
@@ -124,22 +124,83 @@ import { actions } from "astro:actions";
 
           const { data, error } = await actions.getChannelEndpoints({});
 
+          console.log(data);
+
           if (!data || error) {
             throw new Error("failed to get channel endpoints");
           }
 
-          const signalingClient = new (window as any).KVSWebRTC.SignalingClient(
-            {
-              channelARN: import.meta.env.PUBLIC_AWS_CHANNEL_ARN,
-              channelEndpoint: data.wss,
-              role: "MASTER",
-              region: import.meta.env.PUBLIC_AWS_REGION,
-              credentials: {
-                accessKeyId: import.meta.env.PUBLIC_AWS_ACCESS_KEY,
-                secretAccessKey: import.meta.env.PUBLIC_AWS_SECRET_ACCESS_KEY,
-              },
+          signalingClient = new (window as any).KVSWebRTC.SignalingClient({
+            channelARN: import.meta.env.PUBLIC_AWS_CHANNEL_ARN,
+            channelEndpoint: data.WSS,
+            role: "MASTER",
+            region: import.meta.env.PUBLIC_AWS_REGION,
+            credentials: {
+              accessKeyId: import.meta.env.PUBLIC_AWS_ACCESS_KEY,
+              secretAccessKey: import.meta.env.PUBLIC_AWS_SECRET_ACCESS_KEY,
+            },
+          });
+
+          let peerConnection: RTCPeerConnection;
+
+          const configuration = {
+            iceServers: [
+              { urls: "stun:stun.kinesisvideo.us-east-1.amazonaws.com:443" },
+              // add TURN servers if needed
+            ],
+          };
+          peerConnection = new RTCPeerConnection(configuration);
+
+          stream.getTracks().forEach((track) => {
+            peerConnection.addTrack(track, stream);
+          });
+
+          signalingClient.on("open", async () => {
+            const offer = await peerConnection.createOffer({
+              offerToReceiveAudio: true,
+              offerToReceiveVideo: true,
+            });
+            await peerConnection.setLocalDescription(offer);
+            signalingClient.sendSdpOffer(peerConnection.localDescription);
+          });
+
+          // When you receive the SDP answer
+          signalingClient.on(
+            "sdpAnswer",
+            async (answer: RTCSessionDescriptionInit) => {
+              await peerConnection.setRemoteDescription(answer);
+              remoteDescriptionSet = true;
+              // Add all buffered ICE candidates
+              for (const candidate of remoteIceCandidates) {
+                await peerConnection.addIceCandidate(candidate);
+              }
+              remoteIceCandidates.length = 0; // Clear the buffer
             }
           );
+
+          // Buffer for ICE candidates received before remote description is set
+          const remoteIceCandidates: RTCIceCandidateInit[] = [];
+          let remoteDescriptionSet = false;
+
+          // When you receive an ICE candidate from signaling
+          signalingClient.on(
+            "iceCandidate",
+            (candidate: RTCIceCandidateInit) => {
+              if (remoteDescriptionSet) {
+                peerConnection.addIceCandidate(candidate);
+              } else {
+                remoteIceCandidates.push(candidate);
+              }
+            }
+          );
+
+          peerConnection.onicecandidate = ({ candidate }) => {
+            if (candidate) {
+              signalingClient.sendIceCandidate(candidate);
+            }
+          };
+
+          signalingClient.open();
         } catch (err) {
           console.log(err);
           /* handle the error */
