@@ -40,19 +40,26 @@ export const server = {
       });
 
       // 3. Get ICE Server Config
+      try {
+        const signalingClient = new KinesisVideoSignalingClient({
+          region: import.meta.env.PUBLIC_AWS_REGION,
+          endpoint: endpointsByProtocol.HTTPS,
+          credentials: {
+            accessKeyId: import.meta.env.PUBLIC_AWS_ACCESS_KEY,
+            secretAccessKey: import.meta.env.PUBLIC_AWS_SECRET_ACCESS_KEY,
+          },
+        });
 
-      const signalingClient = new KinesisVideoSignalingClient({
-        region: import.meta.env.PUBLIC_AWS_REGION,
-        endpoint: endpointsByProtocol.HTTPS,
-      });
+        const iceServersResponse = await signalingClient.send(
+          new GetIceServerConfigCommand({
+            ChannelARN: import.meta.env.PUBLIC_AWS_CHANNEL_ARN,
+          }),
+        );
 
-      const iceServersResponse = await signalingClient.send(
-        new GetIceServerConfigCommand({
-          ChannelARN: import.meta.env.PUBLIC_AWS_CHANNEL_ARN,
-        }),
-      );
-
-      console.log(iceServersResponse);
+        console.log(iceServersResponse);
+      } catch (e) {
+        console.log(e);
+      }
 
       return endpointsByProtocol;
     },
