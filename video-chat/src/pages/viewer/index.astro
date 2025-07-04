@@ -1,0 +1,51 @@
+---
+import "../../styles/global.css";
+---
+
+<html lang="en">
+  <head>
+    <script
+      src="https://unpkg.com/amazon-kinesis-video-streams-webrtc/dist/kvs-webrtc.min.js"
+    ></script>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Astro Viewer</title>
+  </head>
+  <body>
+    <main>
+      <div class="m-10 p-10 flex flex-col justify-center align-center">
+        <h1>Astro</h1>
+        <video
+          id="video"
+          class="w-[600px] h-[300px]"
+          autoplay
+          playsinline
+          controls></video>
+      </div>
+    </main>
+    <script>
+      import { actions } from "astro:actions";
+
+      const { data, error } = await actions.getChannelEndpoints({});
+
+      console.log(data);
+
+      if (!data || error) {
+        throw new Error("failed to get channel endpoints");
+      }
+
+      const signalingClient = new (window as any).KVSWebRTC.SignalingClient({
+        channelARN: import.meta.env.PUBLIC_AWS_CHANNEL_ARN,
+        channelEndpoint: data.WSS,
+        role: "VIEWER",
+        region: import.meta.env.PUBLIC_AWS_REGION,
+        credentials: {
+          accessKeyId: import.meta.env.PUBLIC_AWS_ACCESS_KEY,
+          secretAccessKey: import.meta.env.PUBLIC_AWS_SECRET_ACCESS_KEY,
+        },
+      });
+    </script>
+  </body>
+</html>
