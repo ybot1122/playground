@@ -11,6 +11,7 @@
   "dependencies": {
     "@aws-sdk/client-kinesis-video": "^3.840.0",
     "@tailwindcss/vite": "^4.1.11",
+    "amazon-kinesis-video-streams-webrtc": "^2.4.1",
     "astro": "^5.10.2",
     "tailwindcss": "^4.1.11"
   }

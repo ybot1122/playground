@@ -1,41 +1,49 @@
+import {
+  GetSignalingChannelEndpointCommand,
+  KinesisVideoClient,
+} from "@aws-sdk/client-kinesis-video";
+import { SignalingClient, Role } from "amazon-kinesis-video-streams-webrtc";
+
 const channelARN =
   "arn:aws:kinesisvideo:us-east-1:365496274414:channel/my-first-streaming/1751572571745";
 const region = "us-east-1";
 const accessKeyId = import.meta.env.PUBLIC_AWS_ACCESS_KEY;
 const secretAccessKey = import.meta.env.PUBLIC_AWS_SECRET_ACCESS_KEY;
 
-export const setupKinesisChannel = async (localStream: MediaStream) => {
-  const KVSWebRTC = window as any;
-  // Get channel endpoint and join as MASTER
-  const kinesisVideoSignalingChannelsClient =
-    new KVSWebRTC.KinesisVideoSignalingChannels({
-      region,
-      credentials: { accessKeyId, secretAccessKey },
-    });
-
-  // Get endpoints
-  const getSignalingChannelEndpointResponse =
-    await kinesisVideoSignalingChannelsClient
-      .getSignalingChannelEndpoint({
-        ChannelARN: channelARN,
-        SingleMasterChannelEndpointConfiguration: {
-          Protocols: ["WSS", "HTTPS"],
-          Role: "MASTER",
-        },
-      })
-      .promise();
-  const endpointsByProtocol: Record<string, string> = {};
-  (getSignalingChannelEndpointResponse.ResourceEndpointList || []).forEach(
-    (endpoint: { Protocol: string; ResourceEndpoint: string }) => {
-      endpointsByProtocol[endpoint.Protocol] = endpoint.ResourceEndpoint;
+export const setupKinesisChannel = async (
+  localStream: MediaStream,
+): Promise<SignalingClient> => {
+  // 1. Get channel ARN
+  const kinesisVideoClient = new KinesisVideoClient({
+    region,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
     },
-  );
+  });
 
-  // Initialize signaling client as MASTER
-  const signalingClient = new KVSWebRTC.SignalingClient({
+  // 2. Get endpoint
+  const getEndpointRes = await kinesisVideoClient.send(
+    new GetSignalingChannelEndpointCommand({
+      ChannelARN: channelARN,
+      SingleMasterChannelEndpointConfiguration: {
+        Protocols: ["WSS", "HTTPS"],
+        Role: "MASTER",
+      },
+    }),
+  );
+  const endpointsByProtocol: Record<string, string> = {};
+  (getEndpointRes.ResourceEndpointList || []).forEach((endpoint) => {
+    if (endpoint.Protocol && endpoint.ResourceEndpoint) {
+      endpointsByProtocol[endpoint.Protocol] = endpoint.ResourceEndpoint;
+    }
+  });
+
+  // 3. Initialize signaling client as MASTER
+  const sc = new SignalingClient({
     channelARN,
     channelEndpoint: endpointsByProtocol.WSS,
-    role: KVSWebRTC.Role.MASTER,
+    role: Role.MASTER,
     region,
     credentials: { accessKeyId, secretAccessKey },
     systemClockOffset: 0,
@@ -50,11 +58,11 @@ export const setupKinesisChannel = async (localStream: MediaStream) => {
     .getTracks()
     .forEach((track) => peerConnection.addTrack(track, localStream));
 
-  signalingClient.on("open", async () => {
+  sc.on("open", async () => {
     // Wait for viewer offers and respond with answers
   });
 
-  signalingClient.connect();
+  sc.open();
 
-  return signalingClient;
+  return sc;
 };
