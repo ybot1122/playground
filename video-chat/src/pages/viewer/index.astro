@@ -15,6 +15,7 @@ import "../../styles/global.css";
   </head>
   <body>
     <main>
+      <button id="start">Connect Viewer</button>
       <div class="m-10 p-10 flex flex-col justify-center align-center">
         <h1>Astro</h1>
         <video
@@ -29,22 +30,95 @@ import "../../styles/global.css";
       import { actions } from "astro:actions";
 
       const { data, error } = await actions.getChannelEndpoints({});
-
-      console.log(data);
+      const videoElement = document.getElementById(
+        "video"
+      )! as HTMLVideoElement;
+      const buttonEl = document.getElementById("start")!;
 
       if (!data || error) {
         throw new Error("failed to get channel endpoints");
       }
 
-      const signalingClient = new (window as any).KVSWebRTC.SignalingClient({
-        channelARN: import.meta.env.PUBLIC_AWS_CHANNEL_ARN,
-        channelEndpoint: data.WSS,
-        role: "VIEWER",
-        region: import.meta.env.PUBLIC_AWS_REGION,
-        credentials: {
-          accessKeyId: import.meta.env.PUBLIC_AWS_ACCESS_KEY,
-          secretAccessKey: import.meta.env.PUBLIC_AWS_SECRET_ACCESS_KEY,
-        },
+      buttonEl.addEventListener("click", () => {
+        const signalingClient = new (window as any).KVSWebRTC.SignalingClient({
+          channelARN: import.meta.env.PUBLIC_AWS_CHANNEL_ARN,
+          channelEndpoint: data.WSS,
+          role: "VIEWER",
+          region: import.meta.env.PUBLIC_AWS_REGION,
+          credentials: {
+            accessKeyId: import.meta.env.PUBLIC_AWS_ACCESS_KEY,
+            secretAccessKey: import.meta.env.PUBLIC_AWS_SECRET_ACCESS_KEY,
+          },
+          clientId: "hello",
+        });
+
+        console.log(signalingClient);
+
+        let peerConnection: RTCPeerConnection;
+
+        const configuration = {
+          iceServers: [
+            { urls: "stun:stun.kinesisvideo.us-east-1.amazonaws.com:443" },
+            // add TURN servers if needed
+          ],
+        };
+        peerConnection = new RTCPeerConnection(configuration);
+
+        signalingClient.on("open", async () => {
+          console.log("signaling client opened");
+
+          /*
+          // Create RTCPeerConnection after signaling is open
+          peerConnection =
+            new RTCPeerConnection();
+
+          // Listen to incoming tracks
+          peerConnection.ontrack = (event) => {
+            // Attach the first stream to the video element
+            if (videoElement.srcObject !== event.streams[0]) {
+              videoElement.srcObject = event.streams[0];
+            }
+          };
+
+          signalingClient.on(
+            "sdpAnswer",
+            async (answer: RTCSessionDescriptionInit) => {
+              console.log("sdpAnswer", answer);
+              await peerConnection.setRemoteDescription(answer);
+            }
+          );
+
+          signalingClient.on(
+            "iceCandidate",
+            (candidate: RTCIceCandidate | undefined | null) => {
+              console.log("iceCandidate", candidate);
+              peerConnection.addIceCandidate(candidate);
+            }
+          );
+
+          // When you get an offer (for VIEWER, AWS will send an offer)
+          signalingClient.on(
+            "sdpOffer",
+            async (offer: RTCSessionDescriptionInit) => {
+              console.log("OFFER: ", offer);
+              await peerConnection.setRemoteDescription(offer);
+              const answer = await peerConnection.createAnswer();
+              await peerConnection.setLocalDescription(answer);
+              signalingClient.sendSdpAnswer(peerConnection.localDescription);
+            }
+          );
+
+          peerConnection.onicecandidate = ({ candidate }) => {
+            if (candidate) {
+              signalingClient.sendIceCandidate(candidate);
+            }
+          };
+
+          peerConnection.ontrack = (event) => {
+            videoElement.srcObject = event.streams[0];
+          };
+          */
+        });
       });
     </script>
   </body>

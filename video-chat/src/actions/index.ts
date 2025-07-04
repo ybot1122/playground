@@ -4,6 +4,10 @@ import {
   GetSignalingChannelEndpointCommand,
   KinesisVideoClient,
 } from "@aws-sdk/client-kinesis-video";
+import {
+  KinesisVideoSignalingClient,
+  GetIceServerConfigCommand,
+} from "@aws-sdk/client-kinesis-video-signaling";
 
 export const server = {
   getChannelEndpoints: defineAction({
@@ -34,6 +38,21 @@ export const server = {
           endpointsByProtocol[endpoint.Protocol] = endpoint.ResourceEndpoint;
         }
       });
+
+      // 3. Get ICE Server Config
+
+      const signalingClient = new KinesisVideoSignalingClient({
+        region: import.meta.env.PUBLIC_AWS_REGION,
+        endpoint: endpointsByProtocol.HTTPS,
+      });
+
+      const iceServersResponse = await signalingClient.send(
+        new GetIceServerConfigCommand({
+          ChannelARN: import.meta.env.PUBLIC_AWS_CHANNEL_ARN,
+        }),
+      );
+
+      console.log(iceServersResponse);
 
       return endpointsByProtocol;
     },
