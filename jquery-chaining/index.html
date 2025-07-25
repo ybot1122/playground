@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Three Divs with Different Styles</title>
+    <style>
+      div {
+        width: 100px;
+        margin: 10px;
+        padding: 5px;
+      }
+      .foo {
+        color: #900;
+      }
+      .bar {
+        background-color: #ddffdd;
+      }
+      .baz {
+        border: 2px solid #009;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="foo">div 1</div>
+    <div class="foo">div 2</div>
+    <div class="foo">div 3</div>
+  </body>
+
+  <script>
+    const curr = {};
+
+    const $ = (selector) => {
+      const matches = document.querySelectorAll(selector);
+
+      const addClass = (className) => {
+        curr[selector].currPromise = curr[selector].currPromise.then(() => {
+          console.log("addClass started");
+
+          matches.forEach((match) => {
+            match.classList.add(className);
+          });
+        });
+        return curr[selector];
+      };
+
+      const delay = (ms) => {
+        curr[selector].currPromise = curr[selector].currPromise.then(() => {
+          console.log("delay started");
+          return new Promise((resolve) => {
+            setTimeout(resolve, ms);
+          });
+        });
+        return curr[selector];
+      };
+
+      curr[selector] = {
+        addClass,
+        delay,
+        currPromise: Promise.resolve(),
+      };
+      return curr[selector];
+    };
+
+    $(".foo").delay(1000).addClass("bar").delay(1000).addClass("baz");
+  </script>
+</html>
