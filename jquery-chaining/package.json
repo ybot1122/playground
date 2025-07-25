@@ -1,0 +1,22 @@
+{
+  "name": "jquery-chaining",
+  "version": "1.0.0",
+  "description": "jQuery chaining example with TypeScript",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dev": "tsc && live-server"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "live-server": "^1.2.2"
+  },
+  "keywords": [
+    "jquery",
+    "chaining",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT"
+}
