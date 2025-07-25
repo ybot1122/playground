@@ -2,67 +2,45 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Three Divs with Different Styles</title>
+    <title>jQuery Chaining Classes Example</title>
     <style>
       div {
         width: 100px;
         margin: 10px;
         padding: 5px;
       }
-      .foo {
-        color: #900;
-      }
-      .bar {
-        background-color: #ddffdd;
-      }
-      .baz {
-        border: 2px solid #009;
-        border-radius: 8px;
-      }
     </style>
   </head>
   <body>
+    <div id="placeholder">This is a placeholder div.</div>
     <div class="foo">div 1</div>
     <div class="foo">div 2</div>
     <div class="foo">div 3</div>
+
+    <div id="chatbox"></div>
+    <div>
+      <input id="message-input" type="text" />
+      <input type="button" value="Send" id="send-button" />
+    </div>
+
+    <script type="module">
+      import { UserPresenceState } from "./dist/class-types.js";
+      import { $ } from "./dist/tquery.js";
+
+      const userPresenceState = new UserPresenceState();
+      userPresenceState.setState("user1", {
+        isOnline: true,
+        lastSeen: new Date(),
+      });
+
+      console.log(userPresenceState.getByKey("user1"));
+
+      document.getElementById("send-button").addEventListener("click", () => {
+        const input = document.getElementById("message-input");
+        const message = input.value;
+        input.value = "";
+        $("#chatbox").append(`<div>${message}</div>`);
+      });
+    </script>
   </body>
-
-  <script>
-    const curr = {};
-
-    const $ = (selector) => {
-      const matches = document.querySelectorAll(selector);
-
-      const addClass = (className) => {
-        curr[selector].currPromise = curr[selector].currPromise.then(() => {
-          console.log("addClass started");
-
-          matches.forEach((match) => {
-            match.classList.add(className);
-          });
-        });
-        return curr[selector];
-      };
-
-      const delay = (ms) => {
-        curr[selector].currPromise = curr[selector].currPromise.then(() => {
-          console.log("delay started");
-          return new Promise((resolve) => {
-            setTimeout(resolve, ms);
-          });
-        });
-        return curr[selector];
-      };
-
-      curr[selector] = {
-        addClass,
-        delay,
-        currPromise: Promise.resolve(),
-      };
-      return curr[selector];
-    };
-
-    $(".foo").delay(1000).addClass("bar").delay(1000).addClass("baz");
-  </script>
 </html>
