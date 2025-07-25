@@ -9,16 +9,6 @@
         margin: 10px;
         padding: 5px;
       }
-      .foo {
-        color: #900;
-      }
-      .bar {
-        background-color: #ddffdd;
-      }
-      .baz {
-        border: 2px solid #009;
-        border-radius: 8px;
-      }
     </style>
   </head>
   <body>
@@ -28,13 +18,15 @@
     <div class="foo">div 3</div>
 
     <script type="module">
-      import { $, runExample } from "./dist/jquery-chain.js";
+      import { UserPresenceState } from "./dist/class-types.js";
 
-      // Example usage
-      runExample();
+      const userPresenceState = new UserPresenceState();
+      userPresenceState.setState("user1", {
+        isOnline: true,
+        lastSeen: new Date(),
+      });
 
-      // You can also use the $ function directly
-      // $(".foo").delay(500).addClass("bar").delay(500).addClass("baz");
+      console.log(userPresenceState.getByKey("user1"));
     </script>
   </body>
 </html>
