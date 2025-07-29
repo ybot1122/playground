@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>jQuery Chaining Classes Example</title>
+    <style>
+      div {
+        width: 100px;
+        margin: 10px;
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="placeholder">This is a placeholder div.</div>
+    <div class="foo">div 1</div>
+    <div class="foo">div 2</div>
+    <div class="foo">div 3</div>
+
+    <div id="chatbox"></div>
+    <div>
+      <input id="message-input" type="text" />
+      <input type="button" value="Send" id="send-button" />
+    </div>
+
+    <script type="module">
+      import { UserPresenceState } from "./dist/class-types.js";
+      import { $ } from "./dist/tquery.js";
+
+      const userPresenceState = new UserPresenceState();
+      userPresenceState.setState("user1", {
+        isOnline: true,
+        lastSeen: new Date(),
+      });
+
+      console.log(userPresenceState.getByKey("user1"));
+
+      document.getElementById("send-button").addEventListener("click", () => {
+        const input = document.getElementById("message-input");
+        const message = input.value;
+        input.value = "";
+        $("#chatbox").append(`<div>${message}</div>`);
+      });
+    </script>
+  </body>
+</html>
