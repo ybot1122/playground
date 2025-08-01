@@ -11,10 +11,7 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "vega-embed": "^7.0.2",
-    "vega-lite": "^6.2.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.0.0",
     "live-server": "^1.2.2",

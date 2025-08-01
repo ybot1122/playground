@@ -1,4 +1,4 @@
-import embed from "vega-embed";
+"use strict";
 const spec = {
     $schema: "https://vega.github.io/schema/vega-lite/v5.json",
     description: "A simple bar chart with embedded data.",
@@ -27,5 +27,7 @@ if (!container) {
     container.id = "vis";
     document.body.appendChild(container);
 }
-embed("#vis", spec);
+// Use the globally available vegaEmbed function
+// @ts-ignore
+vegaEmbed("#vis", spec);
 //# sourceMappingURL=script.js.map

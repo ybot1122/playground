@@ -1,12 +1,9 @@
-import embed from "vega-embed";
-import type { TopLevelSpec } from "vega-lite";
-
 interface DataPoint {
   category: string;
   value: number;
 }
 
-const spec: TopLevelSpec = {
+const spec = {
   $schema: "https://vega.github.io/schema/vega-lite/v5.json",
   description: "A simple bar chart with embedded data.",
   data: {
@@ -36,4 +33,6 @@ if (!container) {
   document.body.appendChild(container);
 }
 
-embed("#vis", spec);
+// Use the globally available vegaEmbed function
+// @ts-ignore
+vegaEmbed("#vis", spec);
